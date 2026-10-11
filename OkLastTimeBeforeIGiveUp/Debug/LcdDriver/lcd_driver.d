@@ -16,11 +16,11 @@ LcdDriver/lcd_driver.obj: /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp
 LcdDriver/lcd_driver.obj: /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/assert.h
 LcdDriver/lcd_driver.obj: /Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp/LcdDriver/lcd_driver.h
 LcdDriver/lcd_driver.obj: /Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp/Grlib/grlib/grlib.h
-LcdDriver/lcd_driver.obj: /Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp/LcdDriver/middle_driver.h
 LcdDriver/lcd_driver.obj: /Applications/ti/ccs2101/ccs/ccs_base/msp430/include/msp430fr6989.h
 LcdDriver/lcd_driver.obj: /Applications/ti/ccs2101/ccs/ccs_base/msp430/include/in430.h
 LcdDriver/lcd_driver.obj: /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/intrinsics.h
 LcdDriver/lcd_driver.obj: /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/intrinsics_legacy_undefs.h
+LcdDriver/lcd_driver.obj: /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/stddef.h
 
 ../LcdDriver/lcd_driver.c:
 
@@ -54,8 +54,6 @@ LcdDriver/lcd_driver.obj: /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp
 
 /Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp/Grlib/grlib/grlib.h:
 
-/Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp/LcdDriver/middle_driver.h:
-
 /Applications/ti/ccs2101/ccs/ccs_base/msp430/include/msp430fr6989.h:
 
 /Applications/ti/ccs2101/ccs/ccs_base/msp430/include/in430.h:
@@ -63,4 +61,6 @@ LcdDriver/lcd_driver.obj: /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp
 /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/intrinsics.h:
 
 /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/intrinsics_legacy_undefs.h:
+
+/Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/stddef.h:
 

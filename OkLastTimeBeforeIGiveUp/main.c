@@ -107,20 +107,11 @@ int main(void)
 	// Configure ACLK and Timer_A
 	config_ACLK_to_32KHz_crystal();
 
-	// The screen communicates over UCA1 SPI interface (Pins P1.4, P1.5)
-	P1SEL0 |= BIT4 | BIT5;  // Configure pins for SPI clock and data lines
-	P1SEL1 &= ~(BIT4 | BIT5); 
-
-	// The LCD Control lines (Data/Command and Reset) map to generic GPIOs
-	P3DIR |= BIT7;  // DC Line (example pin - confirm via your lcd_driver.h sheet)
-	P4DIR |= BIT3;  // RESET Line 
-
 	//initialize game
+	init_ADC();
 	init_graphics();
 	initSnake();
 	placeApple();
-	init_ADC();
-	
 
 	// Configure Timer_A0 matching constraints correctly
 	TA0CCR0 = FRAME_TIME;             // Set frame countdown interval step window
@@ -135,7 +126,7 @@ int main(void)
 
 		//check for gameover
 		if (gameOver) {
-			__bis_SR_register(GIE);
+			__bic_SR_register(GIE);
 			//Clear screen and draw a quick "Game Over" message
 			Graphics_clearDisplay(&g_sContext);
 			Graphics_drawStringCentered(&g_sContext, (int8_t *)"GAME OVER", AUTO_STRING_LENGTH, 60, 60, TRANSPARENT_TEXT);
@@ -416,8 +407,8 @@ void read_Joystick(void) {
 }
 
 void init_graphics(void){
-	P3DIR |= BIT6;  // Set P3.6 as an output pin
-    P3OUT |= BIT6;  // Drive P3.6 HIGH to turn on the screen backlight array
+	P3DIR &= ~BIT6;  // Set P3.6 as an output pin
+    P3OUT &= ~BIT6;  // Drive P3.6 HIGH to turn on the screen backlight array
 	P2DIR &= ~BIT6; //turn on backlight
 	P2OUT &= ~BIT6;
 	

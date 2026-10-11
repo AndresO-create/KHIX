@@ -27,7 +27,6 @@ ORDERED_OBJS += \
 "./GrLib/grlib/rectangle.obj" \
 "./GrLib/grlib/string.obj" \
 "./LcdDriver/lcd_driver.obj" \
-"./LcdDriver/middle_driver.obj" \
 "../lnk_msp430fr6989.cmd" \
 $(GEN_CMDS__FLAG) \
 -llibmpu_init.a \
@@ -159,8 +158,8 @@ OkLastTimeBeforeIGiveUp.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 # Other Targets
 clean:
 	-$(RM) $(EXE_OUTPUTS__QUOTED)
-	-$(RM) "main.obj" "GrLib/fonts/fontcm12.obj" "GrLib/fonts/fontcm12b.obj" "GrLib/fonts/fontcm16.obj" "GrLib/fonts/fontcmss12.obj" "GrLib/fonts/fontcmtt12.obj" "GrLib/fonts/fontfixed6x8.obj" "GrLib/grlib/button.obj" "GrLib/grlib/checkbox.obj" "GrLib/grlib/circle.obj" "GrLib/grlib/context.obj" "GrLib/grlib/display.obj" "GrLib/grlib/image.obj" "GrLib/grlib/imageButton.obj" "GrLib/grlib/line.obj" "GrLib/grlib/radioButton.obj" "GrLib/grlib/rectangle.obj" "GrLib/grlib/string.obj" "LcdDriver/lcd_driver.obj" "LcdDriver/middle_driver.obj" 
-	-$(RM) "main.d" "GrLib/fonts/fontcm12.d" "GrLib/fonts/fontcm12b.d" "GrLib/fonts/fontcm16.d" "GrLib/fonts/fontcmss12.d" "GrLib/fonts/fontcmtt12.d" "GrLib/fonts/fontfixed6x8.d" "GrLib/grlib/button.d" "GrLib/grlib/checkbox.d" "GrLib/grlib/circle.d" "GrLib/grlib/context.d" "GrLib/grlib/display.d" "GrLib/grlib/image.d" "GrLib/grlib/imageButton.d" "GrLib/grlib/line.d" "GrLib/grlib/radioButton.d" "GrLib/grlib/rectangle.d" "GrLib/grlib/string.d" "LcdDriver/lcd_driver.d" "LcdDriver/middle_driver.d" 
+	-$(RM) "main.obj" "GrLib/fonts/fontcm12.obj" "GrLib/fonts/fontcm12b.obj" "GrLib/fonts/fontcm16.obj" "GrLib/fonts/fontcmss12.obj" "GrLib/fonts/fontcmtt12.obj" "GrLib/fonts/fontfixed6x8.obj" "GrLib/grlib/button.obj" "GrLib/grlib/checkbox.obj" "GrLib/grlib/circle.obj" "GrLib/grlib/context.obj" "GrLib/grlib/display.obj" "GrLib/grlib/image.obj" "GrLib/grlib/imageButton.obj" "GrLib/grlib/line.obj" "GrLib/grlib/radioButton.obj" "GrLib/grlib/rectangle.obj" "GrLib/grlib/string.obj" "LcdDriver/lcd_driver.obj" 
+	-$(RM) "main.d" "GrLib/fonts/fontcm12.d" "GrLib/fonts/fontcm12b.d" "GrLib/fonts/fontcm16.d" "GrLib/fonts/fontcmss12.d" "GrLib/fonts/fontcmtt12.d" "GrLib/fonts/fontfixed6x8.d" "GrLib/grlib/button.d" "GrLib/grlib/checkbox.d" "GrLib/grlib/circle.d" "GrLib/grlib/context.d" "GrLib/grlib/display.d" "GrLib/grlib/image.d" "GrLib/grlib/imageButton.d" "GrLib/grlib/line.d" "GrLib/grlib/radioButton.d" "GrLib/grlib/rectangle.d" "GrLib/grlib/string.d" "LcdDriver/lcd_driver.d" 
 	-@echo ' '
 
 .PHONY: all clean dependents
