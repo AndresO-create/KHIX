@@ -65,7 +65,7 @@ void initSnake();
 void freeSnake(void);
 
 //enqueues snake into body
-void enqueue(SnakeNode *snakePart);
+void enqueue(int posX, int posY);
 
 //dequeues the first node in the queue
 void dequeue();
@@ -129,7 +129,7 @@ int main(void)
 	while(1)
 	{
 		// Fall completely asleep inside Low-Power Mode 3 with active Global Interrupts enabled
-		__bis_SR_register(LPM3_bits | GIE); 
+		__bis_SR_register(LPM0_bits | GIE); 
 
 		//check for gameover
 		if (gameOver) {
@@ -142,7 +142,7 @@ int main(void)
 			placeApple();
 			gameOver = 0; // Clear reset tracking states
 
-			__bis_SR_register(GIE);
+			__bis_SR_register(LPM0_bits|GIE);
 		}
 	}
 }
@@ -187,20 +187,22 @@ void initSnake(){
 
 	int i;
 	for(i = 2; i >= 0; i--){
-		SnakeNode *tempNode = addSnake(startX - (BLOCK_SIZE * i), startY);
-		enqueue(tempNode);
-		free(tempNode);
+		enqueue(startX - (BLOCK_SIZE * i), startY);
 	}
 	snake.dirX = 1;
 	snake.dirY = 0;
 }
 
 //enqueues snake into body
-void enqueue(SnakeNode *snakePart){
+void enqueue(int posX, int posY){
 	SnakeNode *newNode = (SnakeNode *)malloc(sizeof(SnakeNode));
-	
-	newNode->x = snakePart->x;
-	newNode->y = snakePart->y;
+	if (newNode == NULL) {
+		P9OUT |= BIT7;
+		return;
+	}
+
+	newNode->x = posX;
+	newNode->y = posY;
 	newNode->next = NULL;
 
 	//append newNode to back of queue
@@ -250,7 +252,7 @@ void moveSnake(int foodFlag){
 	int nextX = snake.head->x + (snake.dirX * BLOCK_SIZE);
 	int nextY = snake.head->y + (snake.dirY * BLOCK_SIZE);
 	
-	enqueue(addSnake(nextX, nextY));
+	enqueue(nextX, nextY);
 
 	Graphics_Rectangle headRect = drawRect(nextX, nextY, GRAPHICS_COLOR_WHITE);
 	Graphics_setForegroundColor(&g_sContext, GRAPHICS_COLOR_WHITE);
@@ -432,4 +434,9 @@ void init_graphics(void){
 
     //Flush the entire display panel to your background color to wipe loose startup artifacts
     Graphics_clearDisplay(&g_sContext);
+}
+
+int _system_pre_init(void) {
+    WDTCTL = WDTPW | WDTHOLD; // Stop watchdog timer immediately
+    return 1;                 // Return 1 to allow standard main() initialization to follow
 }
