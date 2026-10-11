@@ -103,6 +103,9 @@ int main(void)
 
 	// Disable the GPIO high-impedance mode to activate physical pin drivers
 	PM5CTL0 &= ~LOCKLPM5;
+
+	// Unlocks the Ferroelectric memory access lines so graphics context arrays can serialize
+	FRCTL0 = FRCTLPW | NWAITS_1; 
 	
 	// Configure ACLK and Timer_A
 	config_ACLK_to_32KHz_crystal();
