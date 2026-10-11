@@ -8,7 +8,7 @@
 #define startX 60 //starting x positon of the snake
 #define startY 60 //starting y position of snake
 #define BLOCK_SIZE 6 //120x120 screen size meaning that this is approx 5% of the screen
-#define FRAME_TIME 31999 //approx 1/30th of a second meaning that the game will run at 30FPS
+#define FRAME_TIME 333 //approx 1/30th of a second meaning that the game will run at 30FPS
 
 // Track absolute center reference thresholds from the hardware joystick pots
 #define JOY_THRESHOLD_LOW  1500  // Less than this value means LEFT or DOWN
@@ -87,6 +87,7 @@ Graphics_Rectangle drawRect(int xMin, int yMin, uint32_t color);
 void placeApple();
 
 //configures timer to 32KHz
+void config_System_Clocks(void);
 void config_ACLK_to_32KHz_crystal();
 
 void init_ADC(void);
@@ -103,13 +104,15 @@ int main(void)
 
 	// Disable the GPIO high-impedance mode to activate physical pin drivers
 	PM5CTL0 &= ~LOCKLPM5;
-P9DIR |= BIT7; // Set Port 9 Pin 7 (Green LED2) as an Output
+	P9DIR |= BIT7; // Set Port 9 Pin 7 (Green LED2) as an Output
 
 	// Unlocks the Ferroelectric memory access lines so graphics context arrays can serialize
 	FRCTL0 = FRCTLPW | NWAITS_1; 
 	
 	// Configure ACLK and Timer_A
-	config_ACLK_to_32KHz_crystal();
+	//config_ACLK_to_32KHz_crystal();
+	config_System_Clocks();
+
 
 	//initialize game
 	init_ADC();

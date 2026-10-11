@@ -2,15 +2,13 @@
 #include "LcdDriver/lcd_driver.h"
 #include "msp430fr6989.h"
 #include <stdint.h>
-#include <stddef.h>  // Crucial: Defines NULL safely
-
+#include <stddef.h>
 
 uint8_t Lcd_Orientation;
 uint16_t Lcd_ScreenWidth, Lcd_ScreenHeigth;
 uint8_t Lcd_PenSolid, Lcd_FontSolid, Lcd_FlagRead;
 uint16_t Lcd_TouchTrim;
 
-// Forward declarations for low-level internal driver functions
 void HAL_LCD_PortInit(void);
 void HAL_LCD_SpiInit(void);
 void HAL_LCD_writeCommand(uint8_t command);
@@ -25,7 +23,6 @@ static uint32_t Crystalfontz128x128_ColorTranslate(void *pvDisplayData, uint32_t
 static void Crystalfontz128x128_Flush(void *pvDisplayData);
 static void Crystalfontz128x128_ClearDisplay(void *pvDisplayData, uint16_t ulValue);
 
-// MASTER DISPLAY DATA STRUCTURE BINDING: Maps grlib math commands to driver functions
 const Graphics_Display g_sCrystalfontz128x128 =
 {
     sizeof(Graphics_Display),
@@ -42,28 +39,25 @@ const Graphics_Display g_sCrystalfontz128x128 =
 
 void Crystalfontz128x128_Init(void)
 {
-    // 1. Setup physical hardware pins and initialize the eUSCI_B0 module registers
     HAL_LCD_PortInit();
     HAL_LCD_SpiInit();
 
-    // 2. HARDWARE RESET HANDSHAKE PULSE (Critical to drop the white state)
-    P3OUT |= BIT7;              // Start with Reset Line High
-    __delay_cycles(100000);     // Wait for power rails to flatten out
+    P3OUT |= BIT7;              
+    __delay_cycles(100000);     
     
-    P3OUT &= ~BIT7;             // Pulse Reset LOW (Resets the ST7735 chip)
-    __delay_cycles(200000);     // Keep Reset LOW for a long duration to force state wipe
+    P3OUT &= ~BIT7;             
+    __delay_cycles(200000);     
     
-    P3OUT |= BIT7;              // Pull Reset HIGH again to release the chip
-    __delay_cycles(800000);     // CRITICAL: Give the LCD driver board 100ms to boot up its internal oscillators!
+    P3OUT |= BIT7;              
+    __delay_cycles(800000);     
 
-    // 3. Official ST7735 Control Command Pipeline Setup
-    HAL_LCD_writeCommand(CM_SLPOUT); // Exit Sleep Mode
-    __delay_cycles(1000000);         // CRITICAL: Must wait at least 120ms before sending commands after sleep out!
+    HAL_LCD_writeCommand(CM_SLPOUT); 
+    __delay_cycles(1000000);         
 
-    HAL_LCD_writeCommand(CM_GAMSET); // Default Gamma selection profile
+    HAL_LCD_writeCommand(CM_GAMSET); 
     HAL_LCD_writeData(0x04);
 
-    HAL_LCD_writeCommand(CM_SETPWCTR); // Set power control parameters
+    HAL_LCD_writeCommand(CM_SETPWCTR); 
     HAL_LCD_writeData(0x0A);
     HAL_LCD_writeData(0x14);
 
@@ -71,17 +65,16 @@ void Crystalfontz128x128_Init(void)
     HAL_LCD_writeData(0x0A);
     HAL_LCD_writeData(0x00);
 
-    HAL_LCD_writeCommand(CM_COLMOD); // 16-bit packed RGB565 color format configuration block
+    HAL_LCD_writeCommand(CM_COLMOD); 
     HAL_LCD_writeData(0x05);
     __delay_cycles(50000);
 
     HAL_LCD_writeCommand(CM_MADCTL);
     HAL_LCD_writeData(CM_MADCTL_BGR);
 
-    HAL_LCD_writeCommand(CM_NORON);  // Set display panel to normal operations mode
+    HAL_LCD_writeCommand(CM_NORON);  
     __delay_cycles(50000);
 
-    // 4. Register boundary properties matching your screen scale dimensions
     Lcd_ScreenWidth  = LCD_VERTICAL_MAX;
     Lcd_ScreenHeigth = LCD_HORIZONTAL_MAX;
     Lcd_PenSolid  = 0;
@@ -89,21 +82,18 @@ void Crystalfontz128x128_Init(void)
     Lcd_FlagRead  = 0;
     Lcd_TouchTrim = 0;
 
-    // 5. Initial Master Blue Screen Clear-Wipe Loop
     Crystalfontz128x128_SetDrawFrame(0, 0, 127, 127);
     HAL_LCD_writeCommand(CM_RAMWR);
     int i;
     for (i = 0; i < 16384; i++)
     {
-        // Force-inject pure blue pixel packets immediately (0x001F = Pure Blue in RGB565 format)
         HAL_LCD_writeData(0x00); 
-        HAL_LCD_writeData(0x1F);
+        HAL_LCD_writeData(0x1F); 
     }
 
     __delay_cycles(100000);
-    HAL_LCD_writeCommand(CM_DISPON); // Turn the screen graphics matrix ON!
+    HAL_LCD_writeCommand(CM_DISPON); 
 }
-
 
 void Crystalfontz128x128_SetDrawFrame(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
@@ -138,72 +128,51 @@ void Crystalfontz128x128_SetOrientation(uint8_t orientation)
 
 void HAL_LCD_PortInit(void)
 {
-    // 1. Permanently disable the distraction of the flashing onboard RGB LED channels
     P2DIR &= ~BIT6; P2OUT &= ~BIT6; 
     P3DIR &= ~BIT6; P3OUT &= ~BIT6; 
 
-    // 2. Configure official MSP430FR6989 LCD Control Pins as Clean Outputs
-    P3DIR |= BIT7;  // P3.7 = LCD_RESET
-    P3DIR |= BIT1;  // P3.1 = LCD_DC (Data/Command Register Select) -> CRITICAL CORRECTION
-    P3DIR |= BIT4;  // P3.4 = LCD_CS (Chip Select)
+    P3DIR |= BIT7;  // Reset -> Pin 17
+    P3DIR |= BIT1;  // DC -> Pin J4.31
+    P3DIR |= BIT4;  // CS -> Pin J2.13
 
-    // 3. Set standard initial idle states
-    P3OUT |= BIT4;  // LCD_CS = 1 (Display idle)
-    P3OUT &= ~BIT1; // LCD_DC = 0
+    P3OUT |= BIT4;  
+    P3OUT &= ~BIT1; 
 
-    // 4. OFFICIAL DUAL-DOCUMENTATION PIN MATCH:
-    // Route P1.4 to UCB0CLK and P1.6 to UCB0SIMO (Master Data Out)
+    // SPI Pin Selection aligned to the User's Guide (CLK = P1.4, MOSI = P1.6)
     P1SEL0 |= BIT4 | BIT6;
     P1SEL1 &= ~(BIT4 | BIT6);
 }
 
-
 void HAL_LCD_SpiInit(void)
 {
-    // 1. Put the eUSCI_B0 peripheral module into Software Reset to safely write configurations
     UCB0CTLW0 |= UCSWRST;
-
-    // 2. CRITICAL PHASE MODE CORRECTION:
-    // Remove UCCKPH to drop Clock Phase to 0, and ensure UCCKPL is 0.
-    // This perfectly aligns the MSP430FR6989 to SPI Mode 0, matching the ST7735 controller 
-    // chip specifications exactly. Data bits will now serialize without half-cycle shifts.
-    UCB0CTLW0 &= ~UCCKPH; // Phase = 0
-    UCB0CTLW0 &= ~UCCKPL; // Polarity = 0 (Inactive state is low)
     
-    // Master Mode, MSB first, Synchronous SPI mode, Clocked from 8MHz SMCLK
+    // SPI MODE 0 alignment: Turn OFF UCCKPH and UCCKPL entirely
+    UCB0CTLW0 &= ~UCCKPH; 
+    UCB0CTLW0 &= ~UCCKPL; 
+    
     UCB0CTLW0 |= UCMSB | UCMST | UCSYNC | UCSSEL__SMCLK;
-
-    // 3. Keep the relaxed, highly stable clock divider baseline from Thomas Stoeckert's design
-    // 8MHz SMCLK divided by 16 = 500KHz. Prevents clock-frequency buffer overflows.
-    UCB0BR0 = 16; 
+    UCB0BR0 = 16; // Slow baud rate divider to avoid frequency drops
     UCB0BR1 = 0x00;
-
-    // 4. Release software reset to lock flags and activate physical hardware lines
     UCB0CTLW0 &= ~UCSWRST;
 }
 
-
-
 void HAL_LCD_writeCommand(uint8_t command)
 {
-    P3OUT &= ~BIT1; // Drive P3.1 LOW -> Command Mode
-    P3OUT &= ~BIT4; // Drive P3.4 LOW -> Select Display
-
+    P3OUT &= ~BIT1; 
+    P3OUT &= ~BIT4; 
     while ((UCB0IFG & UCTXIFG) == 0); 
     UCB0TXBUF = command;              
-
     while ((UCB0STATW & UCBUSY) != 0); 
     P3OUT |= BIT4;                    
 }
 
 void HAL_LCD_writeData(uint8_t data)
 {
-    P3OUT |= BIT1;  // Drive P3.1 HIGH -> Data Mode
-    P3OUT &= ~BIT4; // Drive P3.4 LOW -> Select Display
-
+    P3OUT |= BIT1;  
+    P3OUT &= ~BIT4; 
     while ((UCB0IFG & UCTXIFG) == 0); 
     UCB0TXBUF = data;             
-
     while ((UCB0STATW & UCBUSY) != 0); 
     P3OUT |= BIT4;                    
 }
@@ -271,7 +240,6 @@ static void Crystalfontz128x128_RectFill(void *pvDisplayData, const Graphics_Rec
 
 static uint32_t Crystalfontz128x128_ColorTranslate(void *pvDisplayData, uint32_t ulValue)
 {
-    // Translates 24-bit grlib hex colors into packed 16-bit RGB565 used by the ST7735 LCD
     return(((ulValue & 0x00F80000) >> 8) | ((ulValue & 0x0000FC00) >> 5) | ((ulValue & 0x000000F8) >> 3));
 }
 
