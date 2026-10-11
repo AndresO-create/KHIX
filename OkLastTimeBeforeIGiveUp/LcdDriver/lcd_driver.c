@@ -136,20 +136,29 @@ void Crystalfontz128x128_SetOrientation(uint8_t orientation)
 
 void HAL_LCD_PortInit(void)
 {
+    // 1. Keep the BoosterPack RGB LEDs completely turned OFF
     P2DIR &= ~BIT6; P2OUT &= ~BIT6; 
     P3DIR &= ~BIT6; P3OUT &= ~BIT6; 
 
-    P3DIR |= BIT7;  // Reset -> Pin 17
-    P3DIR |= BIT1;  // DC -> Pin J4.31 (P3.1)
-    P3DIR |= BIT4;  // CS -> Pin J2.13 (P3.4)
+    // 2. Configure official LCD Control Pins as clean outputs
+    P3DIR |= BIT7;  // P3.7 = LCD_RESET
+    P3DIR |= BIT1;  // P3.1 = LCD_DC (Data/Command select)
+    P3DIR |= BIT4;  // P3.4 = LCD_CS (Chip Select)
 
-    P3OUT |= BIT4;  
-    P3OUT &= ~BIT1; 
+    // 3. Set standard initial idle states
+    P3OUT |= BIT4;  // LCD_CS = 1 (Display de-selected/idle)
+    P3OUT &= ~BIT1; // LCD_DC = 0
 
-    // SPI Port Configuration standard alignment (CLK = P1.4, MOSI = P1.6)
-    P1SEL1 |= (BIT4 | BIT6);
-    P1SEL0 &= ~(BIT4 | BIT6);
+    // 4. Force UCB0STE low to unblock the slave mode registers
+    P1DIR |= BIT5;
+    P1OUT &= ~BIT5;
+
+    // 5. OFFICIAL TI DATA SHEET MULTIPLEXER ALIGNMENT:
+    // P1.4 and P1.6 require SEL1 = 1 and SEL0 = 0 to route through eUSCI_B0 SPI!
+    P1SEL1 |= (BIT4 | BIT6);   
+    P1SEL0 &= ~(BIT4 | BIT6);  
 }
+
 
 void HAL_LCD_SpiInit(void)
 {
