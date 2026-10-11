@@ -42,22 +42,28 @@ const Graphics_Display g_sCrystalfontz128x128 =
 
 void Crystalfontz128x128_Init(void)
 {
+    // 1. Setup physical hardware pins and initialize the eUSCI_B0 module registers
     HAL_LCD_PortInit();
     HAL_LCD_SpiInit();
 
-    // Reset pulse to wake up the screen controller chip
-    P3OUT &= ~BIT7;             
-    __delay_cycles(20000);      
-    P3OUT |= BIT7;              
-    __delay_cycles(150000);     
+    // 2. HARDWARE RESET HANDSHAKE PULSE (Critical to drop the white state)
+    P3OUT |= BIT7;              // Start with Reset Line High
+    __delay_cycles(100000);     // Wait for power rails to flatten out
+    
+    P3OUT &= ~BIT7;             // Pulse Reset LOW (Resets the ST7735 chip)
+    __delay_cycles(200000);     // Keep Reset LOW for a long duration to force state wipe
+    
+    P3OUT |= BIT7;              // Pull Reset HIGH again to release the chip
+    __delay_cycles(800000);     // CRITICAL: Give the LCD driver board 100ms to boot up its internal oscillators!
 
-    HAL_LCD_writeCommand(CM_SLPOUT); 
-    __delay_cycles(200000);          
+    // 3. Official ST7735 Control Command Pipeline Setup
+    HAL_LCD_writeCommand(CM_SLPOUT); // Exit Sleep Mode
+    __delay_cycles(1000000);         // CRITICAL: Must wait at least 120ms before sending commands after sleep out!
 
-    HAL_LCD_writeCommand(CM_GAMSET); 
+    HAL_LCD_writeCommand(CM_GAMSET); // Default Gamma selection profile
     HAL_LCD_writeData(0x04);
 
-    HAL_LCD_writeCommand(CM_SETPWCTR); 
+    HAL_LCD_writeCommand(CM_SETPWCTR); // Set power control parameters
     HAL_LCD_writeData(0x0A);
     HAL_LCD_writeData(0x14);
 
@@ -65,15 +71,17 @@ void Crystalfontz128x128_Init(void)
     HAL_LCD_writeData(0x0A);
     HAL_LCD_writeData(0x00);
 
-    HAL_LCD_writeCommand(CM_COLMOD); 
+    HAL_LCD_writeCommand(CM_COLMOD); // 16-bit packed RGB565 color format configuration block
     HAL_LCD_writeData(0x05);
-    __delay_cycles(20000);
+    __delay_cycles(50000);
 
     HAL_LCD_writeCommand(CM_MADCTL);
     HAL_LCD_writeData(CM_MADCTL_BGR);
 
-    HAL_LCD_writeCommand(CM_NORON); 
+    HAL_LCD_writeCommand(CM_NORON);  // Set display panel to normal operations mode
+    __delay_cycles(50000);
 
+    // 4. Register boundary properties matching your screen scale dimensions
     Lcd_ScreenWidth  = LCD_VERTICAL_MAX;
     Lcd_ScreenHeigth = LCD_HORIZONTAL_MAX;
     Lcd_PenSolid  = 0;
@@ -81,18 +89,21 @@ void Crystalfontz128x128_Init(void)
     Lcd_FlagRead  = 0;
     Lcd_TouchTrim = 0;
 
+    // 5. Initial Master Blue Screen Clear-Wipe Loop
     Crystalfontz128x128_SetDrawFrame(0, 0, 127, 127);
     HAL_LCD_writeCommand(CM_RAMWR);
     int i;
     for (i = 0; i < 16384; i++)
     {
+        // Force-inject pure blue pixel packets immediately (0x001F = Pure Blue in RGB565 format)
         HAL_LCD_writeData(0x00); 
-        HAL_LCD_writeData(0x1F); // pure blue backdrop fill
+        HAL_LCD_writeData(0x1F);
     }
 
-    __delay_cycles(20000);
-    HAL_LCD_writeCommand(CM_DISPON); 
+    __delay_cycles(100000);
+    HAL_LCD_writeCommand(CM_DISPON); // Turn the screen graphics matrix ON!
 }
+
 
 void Crystalfontz128x128_SetDrawFrame(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
@@ -149,21 +160,23 @@ void HAL_LCD_PortInit(void)
 
 void HAL_LCD_SpiInit(void)
 {
-    // 1. Assert software reset to safely alter clock multiplexer registers
+    // 1. Assert software reset to safely write peripheral configurations
     UCB0CTLW0 |= UCSWRST;
 
-    // 2. CRITICAL REALIGNMENT: Change UCSSEL__SMCLK to UCSSEL__ACLK 
-    // This tells the SPI master to drive communication cycles using your ultra-stable 32KHz crystal clock
-    UCB0CTLW0 |= UCCKPH | UCMSB | UCMST | UCSYNC | UCSSEL__ACLK;
+    // 2. Master SPI mode, 3-pin configuration, Synchronous, clock from 8MHz SMCLK
+    UCB0CTLW0 |= UCCKPH | UCMSB | UCMST | UCSYNC | UCSSEL__SMCLK;
 
-    // 3. Set your clock divider parameters
-    // Since ACLK runs at 32,768 Hz, dividing it by 1 or 2 yields a safe, rock-solid baseline
-    UCB0BR0 = 0x01; // Divide clock frequency by 1
+    // 3. CRITICAL DOCUMENT ALIGNMENT: Relax the SPI transmission speed.
+    // 8MHz SMCLK divided by 16 = 500KHz. 
+    // This slow, rock-solid speed perfectly accommodates the ST7735 controller constraints
+    // on the BoosterPack MKII, preventing clock-frequency saturation crashes.
+    UCB0BR0 = 16; 
     UCB0BR1 = 0x00;
 
-    // 4. Release software reset to lock configurations and activate physical pins
+    // 4. Release software reset to activate physical hardware lines
     UCB0CTLW0 &= ~UCSWRST;
 }
+
 
 void HAL_LCD_writeCommand(uint8_t command)
 {
