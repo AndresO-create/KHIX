@@ -2,11 +2,6 @@
    {
       "directory" : "/Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp/Debug",
       "command"   : "clang++ -I\"/Applications/ti/ccs2101/ccs/ccs_base/msp430/include\" -I\"/Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp\" -I\"/Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include\" -D__MSP430FR6989__ -D_MPU_ENABLE -xc",
-      "file"      : "/Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp/main.c"
-   },
-   {
-      "directory" : "/Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp/Debug",
-      "command"   : "clang++ -I\"/Applications/ti/ccs2101/ccs/ccs_base/msp430/include\" -I\"/Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp\" -I\"/Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include\" -D__MSP430FR6989__ -D_MPU_ENABLE -xc",
       "file"      : "/Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp/GrLib/fonts/fontcm12.c"
    },
    {
@@ -93,5 +88,10 @@
       "directory" : "/Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp/Debug",
       "command"   : "clang++ -I\"/Applications/ti/ccs2101/ccs/ccs_base/msp430/include\" -I\"/Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp\" -I\"/Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include\" -D__MSP430FR6989__ -D_MPU_ENABLE -xc",
       "file"      : "/Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp/LcdDriver/lcd_driver.c"
+   },
+   {
+      "directory" : "/Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp/Debug",
+      "command"   : "clang++ -I\"/Applications/ti/ccs2101/ccs/ccs_base/msp430/include\" -I\"/Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp\" -I\"/Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include\" -D__MSP430FR6989__ -D_MPU_ENABLE -xc",
+      "file"      : "/Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp/main.c"
    }
 ]

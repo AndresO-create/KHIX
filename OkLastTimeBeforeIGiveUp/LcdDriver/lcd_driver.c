@@ -1,9 +1,9 @@
 #include "Grlib/grlib/grlib.h"
 #include "LcdDriver/lcd_driver.h"
-//#include "LcdDriver/middle_driver.h"
 #include "msp430fr6989.h"
 #include <stdint.h>
-#include <stddef.h>
+#include <stddef.h>  // Crucial: Defines NULL safely
+
 
 uint8_t Lcd_Orientation;
 uint16_t Lcd_ScreenWidth, Lcd_ScreenHeigth;
