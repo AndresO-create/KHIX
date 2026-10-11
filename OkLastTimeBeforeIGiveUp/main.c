@@ -127,53 +127,51 @@ __interrupt void nextFrame(void) {
 /*******************FUNCTION BODIES********************/
 
 void config_System_Clocks(void) {
-    CSCTL0_H = CSKEY_H;                     // Unlock Clock System registers
+    // 1. Unlock the Clock System registers by passing the security key
+    CSCTL0_H = CSKEY_H;                     
     
-    // Configure the internal DCO to run at 8 MHz precisely
-    CSCTL1 = DCOFSEL_3;                     // DCO = 8 MHz selection
+    // 2. Set the internal Digitally Controlled Oscillator precisely to 8MHz
+    CSCTL1 = DCOFSEL_3;                     
     
-    // Map MCLK and SMCLK straight to the high-speed 8 MHz DCO clock source
-    // SELA__VLOCLK maps ACLK to the internal 10 KHz VLO clock oscillator safely
+    // 3. OFFICIAL TI SYMBOLIC BITMASK FIX:
+    // Clear out the default power-on dividers using the strict header definitions.
+    // This hard-clears the power-on divide-by-8 scaling factor down to zero.
+    CSCTL3 &= ~(DIVM_mask | DIVS_mask | DIVA_mask); 
+    
+    // 4. Force all clock dividers strictly to 1 (No downscaling)
+    CSCTL3 |= DIVM__1 | DIVS__1 | DIVA__1;  
+    
+    // 5. Map lines: ACLK to internal VLO, SMCLK/MCLK to high-speed 8MHz DCO
     CSCTL2 = SELA__VLOCLK | SELS__DCOCLK | SELM__DCOCLK; 
     
-    // Set all system clock dividers to 1 (Full 8MHz speed)
-    CSCTL3 = DIVA__1 | DIVS__1 | DIVM__1;   
-    
-    // Clear any loose clock oscillator fault flags that could stall loops
+    // 6. Clear out any loose clock module oscillator fault flags
     CSCTL5 &= ~(LFXTOFFG | HFXTOFFG);
     
-    CSCTL0_H = 0;                           // Re-lock Clock System registers
+    // 7. Re-lock the Clock System security gates
+    CSCTL0_H = 0;                           
 }
 
 
+
+
 void init_Graphics(void){
-    // Clean out the graphics context memory block before initializing
-    memset(&g_sContext, 0, sizeof(Graphics_Context));
+	// Wait 50ms for display internal capacitors to fully level out
+	__delay_cycles(400000);
 
-    // Wait 50ms for display internal capacitors to fully level out
-    __delay_cycles(400000);
-
-    // Initialize the physical controller chip lines over eUSCI_B0
-    Crystalfontz128x128_Init();
-    Crystalfontz128x128_SetOrientation(LCD_ORIENTATION_UP);
-    
-    // Bind the generic g_sContext structure to your physical display driver
+	// Run the master hardware initialization sequences
+	Crystalfontz128x128_Init();
+	Crystalfontz128x128_SetOrientation(LCD_ORIENTATION_UP);
     Graphics_initContext(&g_sContext, &g_sCrystalfontz128x128);
-
-    // Configure your screen matrix boundaries inside the grlib layer explicitly
-    g_sContext.clipRegion.xMin = 0;
-    g_sContext.clipRegion.yMin = 0;
-    g_sContext.clipRegion.xMax = 127;
-    g_sContext.clipRegion.yMax = 127;
 
     // Apply your game board layout canvas stylings
     Graphics_setBackgroundColor(&g_sContext, GRAPHICS_COLOR_BLUE);  
     Graphics_setForegroundColor(&g_sContext, GRAPHICS_COLOR_WHITE); 
     Graphics_setFont(&g_sContext, &g_sFontCm12);
     
-    // This call will now execute instantly past your previous crash point!
+    // Clear display to a solid Blue background canvas cleanly
     Graphics_clearDisplay(&g_sContext);
 }
+
 
 
 

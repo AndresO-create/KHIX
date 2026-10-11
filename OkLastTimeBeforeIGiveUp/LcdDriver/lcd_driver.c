@@ -136,60 +136,83 @@ void Crystalfontz128x128_SetOrientation(uint8_t orientation)
 
 void HAL_LCD_PortInit(void)
 {
-    // 1. Keep the BoosterPack RGB LEDs completely turned OFF
+    // 1. Maintain clean bare-metal compliance: Neutralize onboard RGB LED channels
     P2DIR &= ~BIT6; P2OUT &= ~BIT6; 
     P3DIR &= ~BIT6; P3OUT &= ~BIT6; 
 
-    // 2. Configure official LCD Control Pins as clean outputs
-    P3DIR |= BIT7;  // P3.7 = LCD_RESET
-    P3DIR |= BIT1;  // P3.1 = LCD_DC (Data/Command select)
-    P3DIR |= BIT4;  // P3.4 = LCD_CS (Chip Select)
+    // 2. Configure official LCD Control Pins as Clean Outputs using Symbolic Masks
+    P3DIR |= BIT7;  // P3.7 = LCD_RESET (Reset Line)
+    P3DIR |= BIT1;  // P3.1 = LCD_DC    (Data / Command Select)
+    P3DIR |= BIT4;  // P3.4 = LCD_CS    (Chip Select Pin)
 
-    // 3. Set standard initial idle states
-    P3OUT |= BIT4;  // LCD_CS = 1 (Display de-selected/idle)
+    // 3. Establish initial active and idle line states
+    P3OUT |= BIT4;  // LCD_CS = 1 (Display Idle / De-selected)
     P3OUT &= ~BIT1; // LCD_DC = 0
 
-    // 4. Force UCB0STE low to unblock the slave mode registers
+    // 4. UNBLOCK MASTER TIMING REGISTERS: Force P1.5 (Slave Transmit Enable) LOW
+    // This stops the eUSCI_B0 module from locking its buffers in slave-halt mode
     P1DIR |= BIT5;
-    P1OUT &= ~BIT5;
+    P1OUT &= ~BIT5; 
 
-    // 5. OFFICIAL TI DATA SHEET MULTIPLEXER ALIGNMENT:
-    // P1.4 and P1.6 require SEL1 = 1 and SEL0 = 0 to route through eUSCI_B0 SPI!
-    P1SEL1 |= (BIT4 | BIT6);   
-    P1SEL0 &= ~(BIT4 | BIT6);  
+    // 5. OFFICIAL CHIP DATA SHEET RE-ALIGNMENT: 
+    // To route P1.4 (Clock) and P1.6 (Data Out) exclusively to the eUSCI_B0 SPI engine,
+    // you must explicitly set BOTH: SEL1 high AND SEL0 low!
+    P1SEL1 |= (BIT4 | BIT6);   // Set SEL1 bits high
+    P1SEL0 &= ~(BIT4 | BIT6);  // CRITICAL FIX: Explicitly clear SEL0 bits low!
 }
 
 
 void HAL_LCD_SpiInit(void)
 {
+    // Put the eUSCI_B0 peripheral module into Software Reset
     UCB0CTLW0 |= UCSWRST;
+
+    // SPI Mode 0 alignment: Ensure Phase and Polarity match standard screen protocols
     UCB0CTLW0 &= ~UCCKPH; 
     UCB0CTLW0 &= ~UCCKPL; 
+    
+    // Master Mode, MSB first, Synchronous SPI mode, Clocked from unthrottled 8MHz SMCLK
     UCB0CTLW0 |= UCMSB | UCMST | UCSYNC | UCSSEL__SMCLK;
-    UCB0BR0 = 0x02; // Fast 4MHz SPI over high-speed 8MHz clock bus
+
+    // Set bit clock divider (8 MHz SMCLK divided by 2 = pure 4 MHz SPI clock transmission)
+    UCB0BR0 = 0x02; 
     UCB0BR1 = 0x00;
+
+    // Release software reset to activate physical hardware lines
     UCB0CTLW0 &= ~UCSWRST;
 }
 
+
 void HAL_LCD_writeCommand(uint8_t command)
 {
-    P3OUT &= ~BIT1; 
-    P3OUT &= ~BIT4; 
+    P3OUT &= ~BIT1; // LCD_DC = 0 (Command Mode)
+    P3OUT &= ~BIT4; // LCD_CS = 0 (Display Active)
+
+    // Wait until the hardware transmit buffer is ready to accept a byte
     while ((UCB0IFG & UCTXIFG) == 0); 
     UCB0TXBUF = command;              
+
+    // Wait for the bit shifter register to empty completely before releasing lines
     while ((UCB0STATW & UCBUSY) != 0); 
-    P3OUT |= BIT4;                    
+
+    P3OUT |= BIT4;  // LCD_CS = 1 (Display Idle)
 }
 
 void HAL_LCD_writeData(uint8_t data)
 {
-    P3OUT |= BIT1;  
-    P3OUT &= ~BIT4; 
+    P3OUT |= BIT1;  // LCD_DC = 1 (Data Mode)
+    P3OUT &= ~BIT4; // LCD_CS = 0 (Display Active)
+
+    // Wait until the hardware transmit buffer is ready to accept a byte
     while ((UCB0IFG & UCTXIFG) == 0); 
     UCB0TXBUF = data;             
+
+    // Wait for the bit shifter register to empty completely before releasing lines
     while ((UCB0STATW & UCBUSY) != 0); 
-    P3OUT |= BIT4;                    
+
+    P3OUT |= BIT4;  // LCD_CS = 1 (Display Idle)
 }
+
 
 void Crystalfontz128x128_PixelDraw(void *pvDisplayData, int16_t lX, int16_t lY, uint16_t ulValue)
 {
@@ -243,14 +266,28 @@ void Crystalfontz128x128_LineDrawV(void *pvDisplayData, int16_t lX, int16_t lY1,
 
 void Crystalfontz128x128_RectFill(void *pvDisplayData, const Graphics_Rectangle *psRect, uint16_t ulValue)
 {
-    int16_t i, numPixels;
+    int32_t i, numPixels;
     Crystalfontz128x128_SetDrawFrame(psRect->xMin, psRect->yMin, psRect->xMax, psRect->yMax);
     HAL_LCD_writeCommand(CM_RAMWR);
-    numPixels = (psRect->xMax - psRect->xMin + 1) * (psRect->yMax - psRect->yMin + 1);
+    
+    numPixels = (int32_t)(psRect->xMax - psRect->xMin + 1) * (int32_t)(psRect->yMax - psRect->yMin + 1);
+    
+    // Assert control lines once outside the loop
+    P3OUT |= BIT1;  // LCD_DC = 1 (Data Mode)
+    P3OUT &= ~BIT4; // LCD_CS = 0 (Display Selected)
+
     for(i = 0; i < numPixels; i++) {
-        HAL_LCD_writeData(ulValue >> 8); HAL_LCD_writeData(ulValue);
+        while ((UCB0IFG & UCTXIFG) == 0);
+        UCB0TXBUF = (uint8_t)(ulValue >> 8); // High Byte
+        
+        while ((UCB0IFG & UCTXIFG) == 0);
+        UCB0TXBUF = (uint8_t)(ulValue);      // Low Byte
     }
+    
+    while ((UCB0STATW & UCBUSY) != 0); 
+    P3OUT |= BIT4;  // LCD_CS = 1
 }
+
 
 uint32_t Crystalfontz128x128_ColorTranslate(void *pvDisplayData, uint32_t ulValue)
 {
