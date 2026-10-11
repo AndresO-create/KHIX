@@ -8,7 +8,7 @@
 #define startX 60 //starting x positon of the snake
 #define startY 60 //starting y position of snake
 #define BLOCK_SIZE 6 //120x120 screen size meaning that this is approx 5% of the screen
-#define FRAME_TIME 1066 //approx 1/30th of a second meaning that the game will run at 30FPS
+#define FRAME_TIME 31999 //approx 1/30th of a second meaning that the game will run at 30FPS
 
 // Track absolute center reference thresholds from the hardware joystick pots
 #define JOY_THRESHOLD_LOW  1500  // Less than this value means LEFT or DOWN
@@ -103,6 +103,7 @@ int main(void)
 
 	// Disable the GPIO high-impedance mode to activate physical pin drivers
 	PM5CTL0 &= ~LOCKLPM5;
+P9DIR |= BIT7; // Set Port 9 Pin 7 (Green LED2) as an Output
 
 	// Unlocks the Ferroelectric memory access lines so graphics context arrays can serialize
 	FRCTL0 = FRCTLPW | NWAITS_1; 
@@ -146,6 +147,8 @@ int main(void)
 /*******************INTERRUPTS********************/
 #pragma vector = TIMER0_A0_VECTOR // Link the ISR to the vector
     __interrupt void nextFrame() {
+		P9OUT ^= BIT7; // Toggle the Green LED on every single frame tick!
+
 		//read current input
 		read_Joystick();
 
@@ -335,34 +338,25 @@ void placeApple(void) {
 
 
 
-void config_ACLK_to_32KHz_crystal(){ 
+void config_System_Clocks(void) {
+    CSCTL0_H = CSKEY_H;                     // Unlock Clock System registers
+    CSCTL1 = DCOFSEL_3;                     // Set DCO speed precisely to 8MHz
+    
+    // SELA__VLOCLK: Forces ACLK to run on the internal 10KHz Very-Low-Power Oscillator (VLO)
+    // This requires no external crystal and is physically impossible to lock up or fault!
+    CSCTL2 = SELA__VLOCLK | SELS__DCOCLK | SELM__DCOCLK; 
+    
+    CSCTL3 = DIVA__1 | DIVS__1 | DIVM__1;   // Set dividers to 1 (No downscaling)
+    CSCTL0_H = 0;                           // Re-lock Clock System registers
+}
 
+void config_ACLK_to_32KHz_crystal(void) {
+    // We are completely removing the dangerous infinite loop from this function!
+    // Since config_System_Clocks safely maps ACLK to the internal VLO, we just configure pins.
+    PJSEL1 &= ~BIT4; 
+    PJSEL0 |= BIT4; 
+}
 
-	// By default, ACLK runs on LFMODCLK at 5MHz/128 = 39 KHz 
-
-	// Reroute pins to LFXIN/LFXOUT functionality 
-
-	PJSEL1 &= ~BIT4; 
-
-	PJSEL0 |= BIT4; 
-
-	// Wait until the oscillator fault flags remain cleared 
-
-	CSCTL0 = CSKEY; // Unlock CS registers 
-
-	do { 
-
-		CSCTL5 &= ~LFXTOFFG; // Local fault flag 
-
-		SFRIFG1 &= ~OFIFG; // Global fault flag 
-
-	} while((CSCTL5 & LFXTOFFG) != 0); 
-
-		CSCTL0_H = 0; // Lock CS registers 
-
-	return; 
-
-} 
 
 void init_ADC(void) {
     // 1. Reroute physical pins P1.6 and P1.7 to function as secondary ADC inputs

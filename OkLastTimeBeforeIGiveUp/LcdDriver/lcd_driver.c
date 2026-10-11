@@ -160,22 +160,28 @@ void HAL_LCD_PortInit(void)
 
 void HAL_LCD_SpiInit(void)
 {
-    // 1. Assert software reset to safely write peripheral configurations
+    // 1. Put the eUSCI_B0 peripheral module into Software Reset to safely write configurations
     UCB0CTLW0 |= UCSWRST;
 
-    // 2. Master SPI mode, 3-pin configuration, Synchronous, clock from 8MHz SMCLK
-    UCB0CTLW0 |= UCCKPH | UCMSB | UCMST | UCSYNC | UCSSEL__SMCLK;
+    // 2. CRITICAL PHASE MODE CORRECTION:
+    // Remove UCCKPH to drop Clock Phase to 0, and ensure UCCKPL is 0.
+    // This perfectly aligns the MSP430FR6989 to SPI Mode 0, matching the ST7735 controller 
+    // chip specifications exactly. Data bits will now serialize without half-cycle shifts.
+    UCB0CTLW0 &= ~UCCKPH; // Phase = 0
+    UCB0CTLW0 &= ~UCCKPL; // Polarity = 0 (Inactive state is low)
+    
+    // Master Mode, MSB first, Synchronous SPI mode, Clocked from 8MHz SMCLK
+    UCB0CTLW0 |= UCMSB | UCMST | UCSYNC | UCSSEL__SMCLK;
 
-    // 3. CRITICAL DOCUMENT ALIGNMENT: Relax the SPI transmission speed.
-    // 8MHz SMCLK divided by 16 = 500KHz. 
-    // This slow, rock-solid speed perfectly accommodates the ST7735 controller constraints
-    // on the BoosterPack MKII, preventing clock-frequency saturation crashes.
+    // 3. Keep the relaxed, highly stable clock divider baseline from Thomas Stoeckert's design
+    // 8MHz SMCLK divided by 16 = 500KHz. Prevents clock-frequency buffer overflows.
     UCB0BR0 = 16; 
     UCB0BR1 = 0x00;
 
-    // 4. Release software reset to activate physical hardware lines
+    // 4. Release software reset to lock flags and activate physical hardware lines
     UCB0CTLW0 &= ~UCSWRST;
 }
+
 
 
 void HAL_LCD_writeCommand(uint8_t command)
