@@ -55,7 +55,7 @@
 #define CM_MADCTL_MH       0x04
 
 extern uint8_t Lcd_Orientation;
-extern uint16_t Lcd_ScreenWidth, Lcd_ScreenHeigth;
+//extern uint16_t Lcd_ScreenWidth, Lcd_ScreenHeigth;
 extern uint8_t Lcd_PenSolid, Lcd_FontSolid, Lcd_FlagRead;
 extern uint16_t Lcd_TouchTrim;
 

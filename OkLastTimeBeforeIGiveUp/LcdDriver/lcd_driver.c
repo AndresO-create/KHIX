@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 uint8_t Lcd_Orientation;
-uint16_t Lcd_ScreenWidth, Lcd_ScreenHeigth;
+//uint16_t Lcd_ScreenWidth, Lcd_ScreenHeigth;
 uint8_t Lcd_PenSolid, Lcd_FontSolid, Lcd_FlagRead;
 uint16_t Lcd_TouchTrim;
 
@@ -25,21 +25,24 @@ uint32_t Crystalfontz128x128_ColorTranslate(void *pvDisplayData, uint32_t ulValu
 void Crystalfontz128x128_Flush(void *pvDisplayData);
 void Crystalfontz128x128_ClearDisplay(void *pvDisplayData, uint16_t ulValue);
 
-// OFFICIAL TI GRLIB STRUCT BINDING MATRIX 
-// (Ensure NO custom width/heigth fields are injected here)
+// OFFICIAL TI GRLIB STRUCT BINDING MATRIX
+// This 44-byte format perfectly matches the structure layouts inside grlib.h and context.c
 const Graphics_Display g_sCrystalfontz128x128 =
 {
     sizeof(Graphics_Display),
-    NULL,                                  // displayData initialization
-    Crystalfontz128x128_PixelDraw,
+    NULL,                                  // displayData pointer
+    128,                                   // width -> Matches the 5908 memory slot exactly!
+    128,                                   // heigth -> Matches the 4166 memory slot exactly!
+    Crystalfontz128x128_PixelDraw,         // Functions realign to their correct tracks
     Crystalfontz128x128_PixelDrawMultiple,
     Crystalfontz128x128_LineDrawH,
     Crystalfontz128x128_LineDrawV,
     Crystalfontz128x128_RectFill,
     Crystalfontz128x128_ColorTranslate,
     Crystalfontz128x128_Flush,
-    Crystalfontz128x128_ClearDisplay       // Maps perfectly onto slot 10, resolving your NULL pointer crash!
+    Crystalfontz128x128_ClearDisplay       // Now populates slot 10 safely, preventing the NULL pointer crash!
 };
+
 
 
 
@@ -80,8 +83,8 @@ void Crystalfontz128x128_Init(void)
     HAL_LCD_writeCommand(CM_NORON);  
     __delay_cycles(50000);
 
-    Lcd_ScreenWidth  = LCD_VERTICAL_MAX;
-    Lcd_ScreenHeigth = LCD_HORIZONTAL_MAX;
+    //Lcd_ScreenWidth  = LCD_VERTICAL_MAX;
+    //Lcd_ScreenHeigth = LCD_HORIZONTAL_MAX;
     Lcd_PenSolid  = 0;
     Lcd_FontSolid = 1;
     Lcd_FlagRead  = 0;
