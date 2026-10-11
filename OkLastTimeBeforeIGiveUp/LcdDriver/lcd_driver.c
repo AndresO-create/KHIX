@@ -143,24 +143,6 @@ void HAL_LCD_SpiInit(void)
     UCB0CTLW0 &= ~UCSWRST;
 }
 
-void HAL_LCD_SpiInit(void)
-{
-    // 1. Put the eUSCI_B0 peripheral module into Software Reset to safely configure registers
-    UCB0CTLW0 |= UCSWRST;
-
-    // 2. Master SPI mode, 3-pin configuration, Synchronous, clock from SMCLK
-    UCB0CTLW0 |= UCCKPH | UCMSB | UCMST | UCSYNC | UCSSEL__SMCLK;
-
-    // 3. Set a safe, highly stable clock divider clock baseline (8MHz SMCLK divided by 4 = 2MHz)
-    // Running at 2MHz is the absolute sweet spot for the ST7735 screen to initialize reliably on an FRAM board
-    UCB0BR0 = 0x04; 
-    UCB0BR1 = 0x00;
-
-    // 4. Release software reset to activate the SPI hardware wheels
-    UCB0CTLW0 &= ~UCSWRST;
-}
-
-
 void HAL_LCD_writeCommand(uint8_t command)
 {
     P2OUT &= ~BIT4; 
