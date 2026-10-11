@@ -140,11 +140,12 @@ void HAL_LCD_PortInit(void)
     P3OUT |= BIT4;  // Drive LCD_CS HIGH (Idle state, display not selected)
     P2OUT &= ~BIT4; // Drive LCD_DC LOW
 
-    // 4. Map P1.5 and P1.6 to their eUSCI_B0 SPI Alternate Functions
-    // On the MSP430FR6989, P1.5 is UCB0CLK and P1.6 is UCB0SIMO
-    P1SEL0 |= BIT5 | BIT6;
-    P1SEL1 &= ~(BIT5 | BIT6);
+    // 4. CRITICAL PHYSICAL HARDWARE PIN FIX: 
+    // On the MSP430FR6989, UCB0CLK is P1.5 and UCB0SIMO (Data Out) is P1.7!
+    P1SEL0 |= BIT5 | BIT7;  // Changed from BIT6 to BIT7
+    P1SEL1 &= ~(BIT5 | BIT7);
 }
+
 
 void HAL_LCD_SpiInit(void)
 {
