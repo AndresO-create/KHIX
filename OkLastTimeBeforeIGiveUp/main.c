@@ -133,12 +133,13 @@ void config_System_Clocks(void) {
     // 2. Set the internal Digitally Controlled Oscillator precisely to 8MHz
     CSCTL1 = DCOFSEL_3;                     
     
-    // 3. OFFICIAL TI SYMBOLIC BITMASK FIX:
-    // Clear out the default power-on dividers using the strict header definitions.
-    // This hard-clears the power-on divide-by-8 scaling factor down to zero.
-    CSCTL3 &= ~(DIVM_mask | DIVS_mask | DIVA_mask); 
+    // 3. UNIVERSAL BIT MASK FIX:
+    // Wipes out the default power-on dividers using raw bit values.
+    // This safely unthrottles MCLK, SMCLK, and ACLK down to zero dividers (Divide-by-1),
+    // bypassing any undefined header naming bugs.
+    CSCTL3 &= ~(BIT6 | BIT5 | BIT4 | BIT2 | BIT1 | BIT0); 
     
-    // 4. Force all clock dividers strictly to 1 (No downscaling)
+    // 4. Force all clock dividers strictly to 1 (Full 8MHz speed across buses)
     CSCTL3 |= DIVM__1 | DIVS__1 | DIVA__1;  
     
     // 5. Map lines: ACLK to internal VLO, SMCLK/MCLK to high-speed 8MHz DCO
@@ -150,6 +151,9 @@ void config_System_Clocks(void) {
     // 7. Re-lock the Clock System security gates
     CSCTL0_H = 0;                           
 }
+
+
+
 
 
 
