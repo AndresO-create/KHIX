@@ -125,6 +125,27 @@ void Crystalfontz128x128_SetOrientation(uint8_t orientation)
     }
 }
 
+void HAL_LCD_PortInit(void)
+{
+    // 1. Permanently keep the distracting onboard RGB LED channels turned OFF
+    P2DIR &= ~BIT6; P2OUT &= ~BIT6; 
+    P3DIR &= ~BIT6; P3OUT &= ~BIT6; 
+
+    // 2. Configure MSP430FR6989 LCD Control Pins as Clean Outputs
+    P3DIR |= BIT7;  // P3.7 = LCD_RESET (Reset Line)
+    P2DIR |= BIT4;  // P2.4 = LCD_DC    (Data / Command Toggle)
+    P3DIR |= BIT4;  // P3.4 = LCD_CS    (Chip Select)
+
+    // 3. Set standard starting idle states
+    P3OUT |= BIT4;  // Drive LCD_CS HIGH (Idle state, display not selected)
+    P2OUT &= ~BIT4; // Drive LCD_DC LOW
+
+    // 4. Map P1.5 and P1.6 to their eUSCI_B0 SPI Alternate Functions
+    // On the MSP430FR6989, P1.5 is UCB0CLK and P1.6 is UCB0SIMO
+    P1SEL0 |= BIT5 | BIT6;
+    P1SEL1 &= ~(BIT5 | BIT6);
+}
+
 void HAL_LCD_SpiInit(void)
 {
     // 1. Assert software reset to safely alter clock multiplexer registers
