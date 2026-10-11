@@ -127,23 +127,23 @@ void Crystalfontz128x128_SetOrientation(uint8_t orientation)
 
 void HAL_LCD_PortInit(void)
 {
-    // 1. Permanently keep the distracting onboard RGB LED channels turned OFF
+    // 1. Permanently disable the distraction of the flashing onboard RGB LED channels
     P2DIR &= ~BIT6; P2OUT &= ~BIT6; 
     P3DIR &= ~BIT6; P3OUT &= ~BIT6; 
 
-    // 2. Configure MSP430FR6989 LCD Control Pins as Clean Outputs
-    P3DIR |= BIT7;  // P3.7 = LCD_RESET (Reset Line)
-    P2DIR |= BIT4;  // P2.4 = LCD_DC    (Data / Command Toggle)
-    P3DIR |= BIT4;  // P3.4 = LCD_CS    (Chip Select)
+    // 2. Configure official MSP430FR6989 LCD Control Pins as Clean Outputs
+    P3DIR |= BIT7;  // P3.7 = LCD_RESET
+    P3DIR |= BIT1;  // P3.1 = LCD_DC (Data/Command Register Select) -> CRITICAL CORRECTION
+    P3DIR |= BIT4;  // P3.4 = LCD_CS (Chip Select)
 
-    // 3. Set standard starting idle states
-    P3OUT |= BIT4;  // Drive LCD_CS HIGH (Idle state, display not selected)
-    P2OUT &= ~BIT4; // Drive LCD_DC LOW
+    // 3. Set standard initial idle states
+    P3OUT |= BIT4;  // LCD_CS = 1 (Display idle)
+    P3OUT &= ~BIT1; // LCD_DC = 0
 
-    // 4. CRITICAL PHYSICAL HARDWARE PIN FIX: 
-    // On the MSP430FR6989, UCB0CLK is P1.5 and UCB0SIMO (Data Out) is P1.7!
-    P1SEL0 |= BIT5 | BIT7;  // Changed from BIT6 to BIT7
-    P1SEL1 &= ~(BIT5 | BIT7);
+    // 4. OFFICIAL DUAL-DOCUMENTATION PIN MATCH:
+    // Route P1.4 to UCB0CLK and P1.6 to UCB0SIMO (Master Data Out)
+    P1SEL0 |= BIT4 | BIT6;
+    P1SEL1 &= ~(BIT4 | BIT6);
 }
 
 
@@ -167,20 +167,24 @@ void HAL_LCD_SpiInit(void)
 
 void HAL_LCD_writeCommand(uint8_t command)
 {
-    P2OUT &= ~BIT4; 
-    P3OUT &= ~BIT4; 
+    P3OUT &= ~BIT1; // Drive P3.1 LOW -> Command Mode
+    P3OUT &= ~BIT4; // Drive P3.4 LOW -> Select Display
+
     while ((UCB0IFG & UCTXIFG) == 0); 
     UCB0TXBUF = command;              
+
     while ((UCB0STATW & UCBUSY) != 0); 
     P3OUT |= BIT4;                    
 }
 
 void HAL_LCD_writeData(uint8_t data)
 {
-    P2OUT |= BIT4;  
-    P3OUT &= ~BIT4; 
+    P3OUT |= BIT1;  // Drive P3.1 HIGH -> Data Mode
+    P3OUT &= ~BIT4; // Drive P3.4 LOW -> Select Display
+
     while ((UCB0IFG & UCTXIFG) == 0); 
     UCB0TXBUF = data;             
+
     while ((UCB0STATW & UCBUSY) != 0); 
     P3OUT |= BIT4;                    
 }
