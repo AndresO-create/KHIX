@@ -1,0 +1,36 @@
+{
+  "mcpServers": {
+    "ccs-debug": {
+      "__comment": "DO NOT MODIFY: Auto-generated properties",
+      "command": "/Applications/ti/ccs2101/ccs/tools/node/node",
+      "args": [
+        "/Applications/ti/ccs2101/ccs/Code Composer Studio.app/Contents/Resources/app/plugins/ccs-ai/extension/dist/mcp-server-proxy.js",
+        "debug"
+      ]
+    },
+    "ccs-project": {
+      "__comment": "DO NOT MODIFY: Auto-generated properties",
+      "command": "/Applications/ti/ccs2101/ccs/tools/node/node",
+      "args": [
+        "/Applications/ti/ccs2101/ccs/Code Composer Studio.app/Contents/Resources/app/plugins/ccs-ai/extension/dist/mcp-server-proxy.js",
+        "project"
+      ]
+    },
+    "ccs-sysconfig": {
+      "__comment": "DO NOT MODIFY: Auto-generated properties",
+      "command": "/Applications/ti/ccs2101/ccs/tools/node/node",
+      "args": [
+        "/Applications/ti/ccs2101/ccs/Code Composer Studio.app/Contents/Resources/app/plugins/ccs-ai/extension/dist/mcp-server-proxy.js",
+        "sysconfig"
+      ]
+    },
+    "ccs-serial": {
+      "__comment": "DO NOT MODIFY: Auto-generated properties",
+      "command": "/Applications/ti/ccs2101/ccs/tools/node/node",
+      "args": [
+        "/Applications/ti/ccs2101/ccs/Code Composer Studio.app/Contents/Resources/app/plugins/ccs-ai/extension/dist/mcp-server-proxy.js",
+        "serial"
+      ]
+    }
+  }
+}

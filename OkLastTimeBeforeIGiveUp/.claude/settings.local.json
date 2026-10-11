@@ -1,0 +1,22 @@
+{
+  "env": {
+    "CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS": "1"
+  },
+  "permissions": {
+    "allow": [
+      "Read(//Users/andresortiz/ti/housekeeping_example_pack_1_00_08/**)",
+      "Read(//Users/andresortiz/ti/msp430ware_3_80_14_01/**)",
+      "Read(//Applications/ti/simplelink_msp432p4_sdk_3_40_01_02/**)",
+      "Read(//Applications/ti/ccs2101/ccs/utils/sysconfig_1.28.1/**)",
+      "Read(//Applications/ti/xdctools_3_60_02_34_core/**)",
+      "mcp__ccs-debug",
+      "mcp__ccs-project",
+      "mcp__ccs-sysconfig",
+      "mcp__ccs-serial",
+      "Read(//Applications/ti/ccs2101/ccs/Code Composer Studio.app/Contents/Resources/ai/**)"
+    ],
+    "ask": [
+      "mcp__ccs-project__changeSysConfigVersion"
+    ]
+  }
+}

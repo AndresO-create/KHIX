@@ -128,54 +128,91 @@ void Crystalfontz128x128_SetOrientation(uint8_t orientation)
 
 void HAL_LCD_PortInit(void)
 {
+    // 1. Keep the BoosterPack RGB LEDs completely turned OFF
     P2DIR &= ~BIT6; P2OUT &= ~BIT6; 
     P3DIR &= ~BIT6; P3OUT &= ~BIT6; 
 
-    P3DIR |= BIT7;  // Reset -> Pin 17
-    P3DIR |= BIT1;  // DC -> Pin J4.31
-    P3DIR |= BIT4;  // CS -> Pin J2.13
+    // 2. Configure official LCD Control Pins as clean outputs
+    P3DIR |= BIT7;  // P3.7 = LCD_RESET
+    P3DIR |= BIT1;  // P3.1 = LCD_DC (Data/Command Register Select Pin)
+    P3DIR |= BIT4;  // P3.4 = LCD_CS (Chip Select)
 
-    P3OUT |= BIT4;  
-    P3OUT &= ~BIT1; 
+    // 3. Set standard initial idle states
+    P3OUT |= BIT4;  // LCD_CS = 1 (Display de-selected/idle)
+    P3OUT &= ~BIT1; // LCD_DC = 0
 
-    // SPI Pin Selection aligned to the User's Guide (CLK = P1.4, MOSI = P1.6)
+    // === CRITICAL TI ARCHITECTURE CROSS-REFERENCE FIX ===
+    // Force P1.5 (UCB0STE) to act as a general output driven LOW. 
+    // This stops the eUSCI_B0 module from thinking an external master is interrupting
+    // the line, completely unblocking the SPI register transmission flags.
+    P1DIR |= BIT5;
+    P1OUT &= ~BIT5;
+
+    // 4. Route P1.4 to UCB0CLK and P1.6 to UCB0SIMO (Master Data Out)
     P1SEL0 |= BIT4 | BIT6;
     P1SEL1 &= ~(BIT4 | BIT6);
 }
 
+
 void HAL_LCD_SpiInit(void)
 {
+    // 1. Put the eUSCI_B0 peripheral module into Software Reset to safely write configurations
     UCB0CTLW0 |= UCSWRST;
+
+    // 2. CONNECT TO HIGH-SPEED CLOCK: Point the module to use the newly stabilized 8 MHz SMCLK
+    UCB0CTLW0 &= ~UCSSEL_3;       // Clear old clock selection bits
+    UCB0CTLW0 |= UCSSEL__SMCLK;   // Select SMCLK (8 MHz)
     
-    // SPI MODE 0 alignment: Turn OFF UCCKPH and UCCKPL entirely
+    // SPI Mode 0 alignment: Phase = 0, Polarity = 0
     UCB0CTLW0 &= ~UCCKPH; 
     UCB0CTLW0 &= ~UCCKPL; 
     
-    UCB0CTLW0 |= UCMSB | UCMST | UCSYNC | UCSSEL__SMCLK;
-    UCB0BR0 = 16; // Slow baud rate divider to avoid frequency drops
+    // Master Mode, MSB first, Synchronous SPI mode configuration
+    UCB0CTLW0 |= UCMSB | UCMST | UCSYNC;
+
+    // 3. Set a safe bit clock divider (8 MHz SMCLK divided by 2 = 4 MHz)
+    // 4 MHz is the perfect speed to clear 16,384 pixels instantly without data dropping
+    UCB0BR0 = 0x02; 
     UCB0BR1 = 0x00;
+
+    // 4. Release software reset to activate physical hardware lines
     UCB0CTLW0 &= ~UCSWRST;
 }
 
+
+
 void HAL_LCD_writeCommand(uint8_t command)
 {
-    P3OUT &= ~BIT1; 
-    P3OUT &= ~BIT4; 
+    P3OUT &= ~BIT1; // P3.1 = LCD_DC LOW -> Entering Command Mode
+    P3OUT &= ~BIT4; // P3.4 = LCD_CS LOW -> Selecting Screen Module
+
+    // Wait until the hardware transmit buffer is empty and ready for a new byte
     while ((UCB0IFG & UCTXIFG) == 0); 
-    UCB0TXBUF = command;              
+    UCB0TXBUF = command;              // Load byte into the serial register
+
+    // Wait for the hardware shifter to completely finish pushing the byte out over the wire
     while ((UCB0STATW & UCBUSY) != 0); 
-    P3OUT |= BIT4;                    
+
+    P3OUT |= BIT4;  // Pull LCD_CS HIGH -> Put display bus to idle
 }
 
 void HAL_LCD_writeData(uint8_t data)
 {
-    P3OUT |= BIT1;  
-    P3OUT &= ~BIT4; 
+    P3OUT |= BIT1;  // P3.1 = LCD_DC HIGH -> Entering Pixel Data Mode
+    P3OUT &= ~BIT4; // P3.4 = LCD_CS LOW -> Selecting Screen Module
+
+    // Wait until the hardware transmit buffer is empty and ready for a new byte
     while ((UCB0IFG & UCTXIFG) == 0); 
     UCB0TXBUF = data;             
+
+    // Wait for the hardware shifter to completely finish pushing the byte out over the wire
     while ((UCB0STATW & UCBUSY) != 0); 
-    P3OUT |= BIT4;                    
+
+    P3OUT |= BIT4;  // Pull LCD_CS HIGH -> Put display bus to idle
 }
+
+
+
 
 static void Crystalfontz128x128_PixelDraw(void *pvDisplayData, int16_t lX, int16_t lY, uint16_t ulValue)
 {

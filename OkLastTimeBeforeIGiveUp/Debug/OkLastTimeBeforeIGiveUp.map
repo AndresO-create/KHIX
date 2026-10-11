@@ -1,10 +1,10 @@
 ******************************************************************************
                   MSP430 Linker Unix v21.6.3                   
 ******************************************************************************
->> Linked Sun Oct 11 00:48:51 2026
+>> Linked Sun Oct 11 01:24:43 2026
 
 OUTPUT FILE NAME:   <OkLastTimeBeforeIGiveUp.out>
-ENTRY POINT SYMBOL: "_c_int00_noargs_mpu"  address: 0000484e
+ENTRY POINT SYMBOL: "_c_int00_noargs_mpu"  address: 00004848
 
 
 MEMORY CONFIGURATION
@@ -18,8 +18,8 @@ MEMORY CONFIGURATION
   INFOC                 00001880   00000080  00000000  00000080  RWIX
   INFOB                 00001900   00000080  00000000  00000080  RWIX
   INFOA                 00001980   00000080  00000000  00000080  RWIX
-  RAM                   00001c00   00000800  000000f2  0000070e  RWIX
-  FRAM                  00004400   0000bb80  000008a4  0000b2dc  RWIX
+  RAM                   00001c00   00000800  000000ee  00000712  RWIX
+  FRAM                  00004400   0000bb80  00000b06  0000b07a  RWIX
   JTAGSIGNATURE         0000ff80   00000004  00000004  00000000  RWIX  ffff 
   BSLSIGNATURE          0000ff84   00000004  00000004  00000000  RWIX  ffff 
   IPESIGNATURE          0000ff88   00000008  00000008  00000000  RWIX  ffff 
@@ -79,7 +79,7 @@ MEMORY CONFIGURATION
   INT53                 0000fffa   00000002  00000002  00000000  RWIX
   INT54                 0000fffc   00000002  00000002  00000000  RWIX
   RESET                 0000fffe   00000002  00000002  00000000  RWIX
-  FRAM2                 00010000   00013ff8  00001b04  000124f4  RWIX
+  FRAM2                 00010000   00013ff8  00001a4c  000125ac  RWIX
 
 
 SECTION ALLOCATION MAP
@@ -110,11 +110,11 @@ section   page    origin      length       input sections
 .ipe_vars 
 *          0    00004800    00000000     UNINITIALIZED
 
-.cinit     0    00004c74    00000030     
-                  00004c74    0000000e     (.cinit..data.load) [load image, compression = lzss]
-                  00004c82    0000000c     (__TI_handler_table)
-                  00004c8e    00000006     (.cinit..bss.load) [load image, compression = zero_init]
-                  00004c94    00000010     (__TI_cinit_table)
+.cinit     0    00004ed6    00000030     
+                  00004ed6    0000000e     (.cinit..data.load) [load image, compression = lzss]
+                  00004ee4    0000000c     (__TI_handler_table)
+                  00004ef0    00000006     (.cinit..bss.load) [load image, compression = zero_init]
+                  00004ef6    00000010     (__TI_cinit_table)
 
 .binit     0    00004400    00000000     
 
@@ -122,31 +122,30 @@ section   page    origin      length       input sections
 *          0    00004400    00000000     UNINITIALIZED
 
 .text:_isr 
-*          0    00004800    00000076     
-                  00004800    0000004e     main.obj (.text:_isr:nextFrame)
-                  0000484e    00000020     rts430x_lc_rd_eabi.lib : boot.c.obj (.text:_isr:_c_int00_noargs_mpu)
-                  0000486e    00000008                            : isr_trap.asm.obj (.text:_isr:__TI_ISR_TRAP)
+*          0    00004800    00000070     
+                  00004800    00000048     main.obj (.text:_isr:nextFrame)
+                  00004848    00000020     rts430x_lc_rd_eabi.lib : boot.c.obj (.text:_isr:_c_int00_noargs_mpu)
+                  00004868    00000008                            : isr_trap.asm.obj (.text:_isr:__TI_ISR_TRAP)
 
-.bss       0    00001c00    00000040     UNINITIALIZED
+.bss       0    00001c00    0000003c     UNINITIALIZED
                   00001c00    0000001c     (.common:g_sContext)
                   00001c1c    0000000e     (.common:snake)
                   00001c2a    00000004     rts430x_lc_rd_eabi.lib : memory.c.obj (.bss)
-                  00001c2e    00000004     (.common:adcResult)
-                  00001c32    00000004     (.common:apple)
-                  00001c36    00000002     (.common:Lcd_ScreenHeigth)
-                  00001c38    00000002     (.common:Lcd_ScreenWidth)
-                  00001c3a    00000002     (.common:Lcd_TouchTrim)
-                  00001c3c    00000001     (.common:Lcd_FlagRead)
-                  00001c3d    00000001     (.common:Lcd_FontSolid)
-                  00001c3e    00000001     (.common:Lcd_Orientation)
-                  00001c3f    00000001     (.common:Lcd_PenSolid)
+                  00001c2e    00000004     (.common:apple)
+                  00001c32    00000002     (.common:Lcd_ScreenHeigth)
+                  00001c34    00000002     (.common:Lcd_ScreenWidth)
+                  00001c36    00000002     (.common:Lcd_TouchTrim)
+                  00001c38    00000001     (.common:Lcd_FlagRead)
+                  00001c39    00000001     (.common:Lcd_FontSolid)
+                  00001c3a    00000001     (.common:Lcd_Orientation)
+                  00001c3b    00000001     (.common:Lcd_PenSolid)
 
-.data      0    00001c40    00000012     UNINITIALIZED
-                  00001c40    00000004     rts430x_lc_rd_eabi.lib : _lock.c.obj (.data:_lock)
-                  00001c44    00000004                            : _lock.c.obj (.data:_unlock)
-                  00001c48    00000004     main.obj (.data)
-                  00001c4c    00000004     rts430x_lc_rd_eabi.lib : rand.c.obj (.data)
-                  00001c50    00000002                            : memory.c.obj (.data)
+.data      0    00001c3c    00000012     UNINITIALIZED
+                  00001c3c    00000004     rts430x_lc_rd_eabi.lib : _lock.c.obj (.data:_lock)
+                  00001c40    00000004                            : _lock.c.obj (.data:_unlock)
+                  00001c44    00000004     main.obj (.data)
+                  00001c48    00000004     rts430x_lc_rd_eabi.lib : rand.c.obj (.data)
+                  00001c4c    00000002                            : memory.c.obj (.data)
 
 .stack     0    00002360    000000a0     UNINITIALIZED
                   00002360    00000004     rts430x_lc_rd_eabi.lib : boot.c.obj (.stack)
@@ -258,14 +257,15 @@ SYSNMI     0    0000fffc    00000002
 .reset     0    0000fffe    00000002     
                   0000fffe    00000002     rts430x_lc_rd_eabi.lib : boot.c.obj (.reset)
 
-.const     0    00004876    000003fe     
-                  00004876    000002f8     fontfixed6x8.obj (.const:.string:g_pucFontFixed6x8Data)
-                  00004b6e    000000c8     fontfixed6x8.obj (.const:g_sFontFixed6x8)
-                  00004c36    0000002c     lcd_driver.obj (.const:g_sCrystalfontz128x128)
-                  00004c62    0000000a     main.obj (.const:.string)
-                  00004c6c    00000008     lcd_driver.obj (.const:$P$T0$1)
+.const     0    00004870    00000666     
+                  00004870    0000055f     fontcm12.obj (.const:.string:g_pucCm12Data)
+                  00004dcf    00000001     --HOLE-- [fill = 0]
+                  00004dd0    000000c8     fontcm12.obj (.const:g_sFontCm12)
+                  00004e98    0000002c     lcd_driver.obj (.const:g_sCrystalfontz128x128)
+                  00004ec4    0000000a     main.obj (.const:.string)
+                  00004ece    00000008     lcd_driver.obj (.const:$P$T0$1)
 
-.text      0    00010000    00001b04     
+.text      0    00010000    00001a4c     
                   00010000    00000808     string.obj (.text:Graphics_drawString)
                   00010808    00000156     lcd_driver.obj (.text:Crystalfontz128x128_Init)
                   0001095e    00000112     rts430x_lc_rd_eabi.lib : memory.c.obj (.text:aligned_alloc)
@@ -274,83 +274,82 @@ SYSNMI     0    0000fffc    00000002
                   00010c2e    000000c2     string.obj (.text:Graphics_getStringWidth)
                   00010cf0    000000ae     rectangle.obj (.text:Graphics_fillRectangle)
                   00010d9e    0000009e     lcd_driver.obj (.text:Crystalfontz128x128_SetDrawFrame)
-                  00010e3c    0000009a     main.obj (.text:main)
-                  00010ed6    0000007a     main.obj (.text:init_graphics)
-                  00010f50    00000078     string.obj (.text:Graphics_drawStringCentered)
-                  00010fc8    00000078     main.obj (.text:placeApple)
-                  00011040    00000076     lcd_driver.obj (.text:Crystalfontz128x128_PixelDrawMultiple)
-                  000110b6    00000076     rts430x_lc_rd_eabi.lib : copy_decompress_lzss.c.obj (.text:decompress:lzss:__TI_decompress_lzss)
-                  0001112c    00000076     main.obj (.text:read_Joystick)
-                  000111a2    00000074     rts430x_lc_rd_eabi.lib : memory.c.obj (.text:split)
-                  00011216    0000006c     main.obj (.text:moveSnake)
-                  00011282    00000068     main.obj (.text:handleCollision)
-                  000112ea    00000064     main.obj (.text:drawRect)
-                  0001134e    0000005a     lcd_driver.obj (.text:Crystalfontz128x128_RectFill)
-                  000113a8    00000058     rts430x_lc_rd_eabi.lib : div32u.asm.obj (.text)
-                  00011400    00000054                            : autoinit.c.obj (.text:__TI_auto_init_nobinit_nopinit_hold_wdt:__TI_auto_init_nobinit_nopinit_hold_wdt)
-                  00011454    00000054     main.obj (.text:dequeue)
-                  000114a8    0000004c     main.obj (.text:enqueue)
-                  000114f4    0000004c     main.obj (.text:initSnake)
-                  00011540    0000004a     string.obj (.text:Graphics_getNumberOfLeadingZeros)
-                  0001158a    00000046     lcd_driver.obj (.text:Crystalfontz128x128_SetOrientation)
-                  000115d0    00000042     lcd_driver.obj (.text:Crystalfontz128x128_ColorTranslate)
-                  00011612    00000040     lcd_driver.obj (.text:HAL_LCD_PortInit)
-                  00011652    00000040     rts430x_lc_rd_eabi.lib : rand.c.obj (.text:rand)
-                  00011692    00000040                            : div32s.asm.obj (.text)
-                  000116d2    0000003e                            : lsr32.asm.obj (.text:l_lsr_const)
-                  00011710    0000003c     lcd_driver.obj (.text:Crystalfontz128x128_LineDrawV)
-                  0001174c    0000003c     context.obj (.text:Graphics_initContext)
-                  00011788    0000003a     lcd_driver.obj (.text:Crystalfontz128x128_LineDrawH)
-                  000117c2    0000002e     lcd_driver.obj (.text:Crystalfontz128x128_PixelDraw)
-                  000117f0    0000002c     lcd_driver.obj (.text:Crystalfontz128x128_ClearDisplay)
-                  0001181c    0000002c     MSPMPU_INIT_LIB_CCS_msp430_large_code_restricted_data.lib : mpu_init.o (.text:__mpu_init)
-                  00011848    0000002c     rts430x_lc_rd_eabi.lib : memory.c.obj (.text:free_list_insert)
-                  00011874    0000002c                            : div16s.asm.obj (.text)
-                  000118a0    0000002a                            : memory.c.obj (.text:free_list_remove)
-                  000118ca    00000026     lcd_driver.obj (.text:HAL_LCD_SpiInit)
-                  000118f0    00000024     lcd_driver.obj (.text:HAL_LCD_writeCommand)
-                  00011914    00000024     lcd_driver.obj (.text:HAL_LCD_writeData)
-                  00011938    00000024     rts430x_lc_rd_eabi.lib : copy_zero_init.c.obj (.text:decompress:ZI:__TI_zero_init_nomemset:__TI_zero_init_nomemset)
-                  0001195c    00000024     main.obj (.text:init_ADC)
-                  00011980    00000024     rts430x_lc_rd_eabi.lib : mult32_f5hw.asm.obj (.text)
-                  000119a4    0000001c     main.obj (.text:config_System_Clocks)
-                  000119c0    0000001a     display.obj (.text:Graphics_drawHorizontalLineOnDisplay)
-                  000119da    00000018     context.obj (.text:Graphics_setBackgroundColor)
-                  000119f2    00000018     context.obj (.text:Graphics_setForegroundColor)
-                  00011a0a    00000018     rts430x_lc_rd_eabi.lib : mult16_f5hw.asm.obj (.text)
-                  00011a22    00000016                            : memory.c.obj (.text:heap_start)
-                  00011a38    00000016                            : div16u.asm.obj (.text)
-                  00011a4e    00000014                            : memcpy.c.obj (.text:memcpy)
-                  00011a62    00000012                            : copy_decompress_none.c.obj (.text:decompress:none:__TI_decompress_none)
-                  00011a74    00000010     context.obj (.text:Graphics_clearDisplay)
-                  00011a84    00000010     main.obj (.text:freeSnake)
-                  00011a94    0000000e     display.obj (.text:Graphics_clearDisplayOnDisplay)
-                  00011aa2    0000000e     display.obj (.text:Graphics_drawPixelOnDisplay)
-                  00011ab0    0000000e     display.obj (.text:Graphics_fillRectangleOnDisplay)
-                  00011abe    0000000e     display.obj (.text:Graphics_translateColorOnDisplay)
-                  00011acc    0000000a     main.obj (.text:_system_pre_init)
-                  00011ad6    0000000a     rts430x_lc_rd_eabi.lib : lsl16.asm.obj (.text)
-                  00011ae0    0000000a                            : lsr16.asm.obj (.text)
-                  00011aea    00000008                            : memory.c.obj (.text:malloc)
-                  00011af2    00000006     context.obj (.text:Graphics_setFont)
-                  00011af8    00000006     rts430x_lc_rd_eabi.lib : exit.c.obj (.text:abort)
-                  00011afe    00000002     lcd_driver.obj (.text:Crystalfontz128x128_Flush)
-                  00011b00    00000002     rts430x_lc_rd_eabi.lib : _lock.c.obj (.text:_nop)
-                  00011b02    00000002                            : startup.c.obj (.text:_system_post_cinit)
+                  00010e3c    00000096     main.obj (.text:main)
+                  00010ed2    00000078     string.obj (.text:Graphics_drawStringCentered)
+                  00010f4a    00000078     main.obj (.text:placeApple)
+                  00010fc2    00000076     lcd_driver.obj (.text:Crystalfontz128x128_PixelDrawMultiple)
+                  00011038    00000076     rts430x_lc_rd_eabi.lib : copy_decompress_lzss.c.obj (.text:decompress:lzss:__TI_decompress_lzss)
+                  000110ae    00000074                            : memory.c.obj (.text:split)
+                  00011122    00000064     main.obj (.text:drawRect)
+                  00011186    00000062     main.obj (.text:init_Graphics)
+                  000111e8    0000005e     main.obj (.text:handleCollision)
+                  00011246    0000005a     lcd_driver.obj (.text:Crystalfontz128x128_RectFill)
+                  000112a0    00000058     main.obj (.text:moveSnake)
+                  000112f8    00000058     rts430x_lc_rd_eabi.lib : div32u.asm.obj (.text)
+                  00011350    00000054                            : autoinit.c.obj (.text:__TI_auto_init_nobinit_nopinit_hold_wdt:__TI_auto_init_nobinit_nopinit_hold_wdt)
+                  000113a4    0000004c     lcd_driver.obj (.text:HAL_LCD_PortInit)
+                  000113f0    0000004a     string.obj (.text:Graphics_getNumberOfLeadingZeros)
+                  0001143a    00000046     lcd_driver.obj (.text:Crystalfontz128x128_SetOrientation)
+                  00011480    00000044     main.obj (.text:dequeue)
+                  000114c4    00000044     main.obj (.text:enqueue)
+                  00011508    00000044     main.obj (.text:initSnake)
+                  0001154c    00000042     lcd_driver.obj (.text:Crystalfontz128x128_ColorTranslate)
+                  0001158e    00000040     rts430x_lc_rd_eabi.lib : rand.c.obj (.text:rand)
+                  000115ce    00000040                            : div32s.asm.obj (.text)
+                  0001160e    0000003e                            : lsr32.asm.obj (.text:l_lsr_const)
+                  0001164c    0000003c     lcd_driver.obj (.text:Crystalfontz128x128_LineDrawV)
+                  00011688    0000003c     context.obj (.text:Graphics_initContext)
+                  000116c4    0000003a     lcd_driver.obj (.text:Crystalfontz128x128_LineDrawH)
+                  000116fe    00000030     lcd_driver.obj (.text:HAL_LCD_SpiInit)
+                  0001172e    0000002e     lcd_driver.obj (.text:Crystalfontz128x128_PixelDraw)
+                  0001175c    0000002c     lcd_driver.obj (.text:Crystalfontz128x128_ClearDisplay)
+                  00011788    0000002c     MSPMPU_INIT_LIB_CCS_msp430_large_code_restricted_data.lib : mpu_init.o (.text:__mpu_init)
+                  000117b4    0000002c     rts430x_lc_rd_eabi.lib : memory.c.obj (.text:free_list_insert)
+                  000117e0    0000002c                            : div16s.asm.obj (.text)
+                  0001180c    0000002a                            : memory.c.obj (.text:free_list_remove)
+                  00011836    00000026     main.obj (.text:init_ADC)
+                  0001185c    00000024     lcd_driver.obj (.text:HAL_LCD_writeCommand)
+                  00011880    00000024     lcd_driver.obj (.text:HAL_LCD_writeData)
+                  000118a4    00000024     rts430x_lc_rd_eabi.lib : copy_zero_init.c.obj (.text:decompress:ZI:__TI_zero_init_nomemset:__TI_zero_init_nomemset)
+                  000118c8    00000024                            : mult32_f5hw.asm.obj (.text)
+                  000118ec    00000022     main.obj (.text:config_System_Clocks)
+                  0001190e    0000001a     display.obj (.text:Graphics_drawHorizontalLineOnDisplay)
+                  00011928    00000018     context.obj (.text:Graphics_setBackgroundColor)
+                  00011940    00000018     context.obj (.text:Graphics_setForegroundColor)
+                  00011958    00000018     rts430x_lc_rd_eabi.lib : mult16_f5hw.asm.obj (.text)
+                  00011970    00000016                            : memory.c.obj (.text:heap_start)
+                  00011986    00000016                            : div16u.asm.obj (.text)
+                  0001199c    00000014                            : memcpy.c.obj (.text:memcpy)
+                  000119b0    00000012                            : copy_decompress_none.c.obj (.text:decompress:none:__TI_decompress_none)
+                  000119c2    00000010     context.obj (.text:Graphics_clearDisplay)
+                  000119d2    00000010     main.obj (.text:freeSnake)
+                  000119e2    0000000e     display.obj (.text:Graphics_clearDisplayOnDisplay)
+                  000119f0    0000000e     display.obj (.text:Graphics_drawPixelOnDisplay)
+                  000119fe    0000000e     display.obj (.text:Graphics_fillRectangleOnDisplay)
+                  00011a0c    0000000e     display.obj (.text:Graphics_translateColorOnDisplay)
+                  00011a1a    0000000a     rts430x_lc_rd_eabi.lib : lsl16.asm.obj (.text)
+                  00011a24    0000000a                            : lsr16.asm.obj (.text)
+                  00011a2e    00000008                            : memory.c.obj (.text:malloc)
+                  00011a36    00000006     context.obj (.text:Graphics_setFont)
+                  00011a3c    00000006     rts430x_lc_rd_eabi.lib : exit.c.obj (.text:abort)
+                  00011a42    00000004                            : pre_init.c.obj (.text:_system_pre_init)
+                  00011a46    00000002     lcd_driver.obj (.text:Crystalfontz128x128_Flush)
+                  00011a48    00000002     rts430x_lc_rd_eabi.lib : _lock.c.obj (.text:_nop)
+                  00011a4a    00000002                            : startup.c.obj (.text:_system_post_cinit)
 
 MODULE SUMMARY
 
        Module                       code   ro data   rw data
        ------                       ----   -------   -------
     ./
-       main.obj                     1230   12        54     
+       main.obj                     1014   12        50     
     +--+----------------------------+------+---------+---------+
-       Total:                       1230   12        54     
+       Total:                       1014   12        50     
                                                             
     ./GrLib/fonts/
-       fontfixed6x8.obj             0      960       0      
+       fontcm12.obj                 0      1575      0      
     +--+----------------------------+------+---------+---------+
-       Total:                       0      960       0      
+       Total:                       0      1575      0      
                                                             
     ./GrLib/grlib/
        string.obj                   2444   0         0      
@@ -362,9 +361,9 @@ MODULE SUMMARY
        Total:                       3050   0         0      
                                                             
     ./LcdDriver/
-       lcd_driver.obj               1228   52        10     
+       lcd_driver.obj               1250   52        10     
     +--+----------------------------+------+---------+---------+
-       Total:                       1228   52        10     
+       Total:                       1250   52        10     
                                                             
     /Applications/ti/ccs2101/ccs/ccs_base/msp430/lib/FR59xx/MSPMPU_INIT_LIB_CCS_msp430_large_code_restricted_data.lib
        mpu_init.o                   44     0         0      
@@ -392,6 +391,7 @@ MODULE SUMMARY
        lsr16.asm.obj                10     0         0      
        isr_trap.asm.obj             8      0         0      
        exit.c.obj                   6      0         0      
+       pre_init.c.obj               4      0         0      
        int27.asm.obj                0      2         0      
        int28.asm.obj                0      2         0      
        int29.asm.obj                0      2         0      
@@ -421,25 +421,25 @@ MODULE SUMMARY
        int54.asm.obj                0      2         0      
        startup.c.obj                2      0         0      
     +--+----------------------------+------+---------+---------+
-       Total:                       1482   56        18     
+       Total:                       1486   56        18     
                                                             
        Heap:                        0      0         160    
        Stack:                       0      0         160    
        Linker Generated:            0      48        0      
     +--+----------------------------+------+---------+---------+
-       Grand Total:                 7034   1128      402    
+       Grand Total:                 6844   1743      398    
 
 
 LINKER GENERATED COPY TABLES
 
-__TI_cinit_table @ 00004c94 records: 2, size/record: 8, table size: 16
-	.data: load addr=00004c74, load size=0000000e bytes, run addr=00001c40, run size=00000012 bytes, compression=lzss
-	.bss: load addr=00004c8e, load size=00000006 bytes, run addr=00001c00, run size=00000040 bytes, compression=zero_init
+__TI_cinit_table @ 00004ef6 records: 2, size/record: 8, table size: 16
+	.data: load addr=00004ed6, load size=0000000e bytes, run addr=00001c3c, run size=00000012 bytes, compression=lzss
+	.bss: load addr=00004ef0, load size=00000006 bytes, run addr=00001c00, run size=0000003c bytes, compression=zero_init
 
 
 LINKER GENERATED HANDLER TABLE
 
-__TI_handler_table @ 00004c82 records: 3, size/record: 4, table size: 12
+__TI_handler_table @ 00004ee4 records: 3, size/record: 4, table size: 12
 	index: 0, handler: __TI_zero_init
 	index: 1, handler: __TI_decompress_lzss
 	index: 2, handler: __TI_decompress_none
@@ -706,7 +706,7 @@ address   name
 000009ce  AESAXIN_L                              
 000004be  BCD2BIN                                
 000004bc  BIN2BCD                                
-00011af8  C$$EXIT                                
+00011a3c  C$$EXIT                                
 0000043e  CAPTIO0CTL                             
 0000043f  CAPTIO0CTL_H                           
 0000043e  CAPTIO0CTL_L                           
@@ -811,7 +811,7 @@ address   name
 0000016c  CSCTL6_L                               
 00010808  Crystalfontz128x128_Init               
 00010d9e  Crystalfontz128x128_SetDrawFrame       
-0001158a  Crystalfontz128x128_SetOrientation     
+0001143a  Crystalfontz128x128_SetOrientation     
 00000510  DMA0CTL                                
 00000516  DMA0DA                                 
 00000518  DMA0DAH                                
@@ -1183,25 +1183,25 @@ address   name
 00000146  GCCTL1                                 
 00000147  GCCTL1_H                               
 00000146  GCCTL1_L                               
-00011a74  Graphics_clearDisplay                  
-00011a94  Graphics_clearDisplayOnDisplay         
-000119c0  Graphics_drawHorizontalLineOnDisplay   
+000119c2  Graphics_clearDisplay                  
+000119e2  Graphics_clearDisplayOnDisplay         
+0001190e  Graphics_drawHorizontalLineOnDisplay   
 00010b52  Graphics_drawLineH                     
-00011aa2  Graphics_drawPixelOnDisplay            
+000119f0  Graphics_drawPixelOnDisplay            
 00010000  Graphics_drawString                    
-00010f50  Graphics_drawStringCentered            
+00010ed2  Graphics_drawStringCentered            
 00010cf0  Graphics_fillRectangle                 
-00011ab0  Graphics_fillRectangleOnDisplay        
+000119fe  Graphics_fillRectangleOnDisplay        
 00010c2e  Graphics_getStringWidth                
-0001174c  Graphics_initContext                   
-000119da  Graphics_setBackgroundColor            
-00011af2  Graphics_setFont                       
-000119f2  Graphics_setForegroundColor            
-00011abe  Graphics_translateColorOnDisplay       
-00011612  HAL_LCD_PortInit                       
-000118ca  HAL_LCD_SpiInit                        
-000118f0  HAL_LCD_writeCommand                   
-00011914  HAL_LCD_writeData                      
+00011688  Graphics_initContext                   
+00011928  Graphics_setBackgroundColor            
+00011a36  Graphics_setFont                       
+00011940  Graphics_setForegroundColor            
+00011a0c  Graphics_translateColorOnDisplay       
+000113a4  HAL_LCD_PortInit                       
+000116fe  HAL_LCD_SpiInit                        
+0001185c  HAL_LCD_writeCommand                   
+00011880  HAL_LCD_writeData                      
 00000a40  LCDBM1                                 
 00000a49  LCDBM10                                
 00000a4a  LCDBM11                                
@@ -1295,13 +1295,13 @@ address   name
 00000a26  LCDM7                                  
 00000a27  LCDM8                                  
 00000a28  LCDM9                                  
-00001c3c  Lcd_FlagRead                           
-00001c3d  Lcd_FontSolid                          
-00001c3e  Lcd_Orientation                        
-00001c3f  Lcd_PenSolid                           
-00001c36  Lcd_ScreenHeigth                       
-00001c38  Lcd_ScreenWidth                        
-00001c3a  Lcd_TouchTrim                          
+00001c38  Lcd_FlagRead                           
+00001c39  Lcd_FontSolid                          
+00001c3a  Lcd_Orientation                        
+00001c3b  Lcd_PenSolid                           
+00001c32  Lcd_ScreenHeigth                       
+00001c34  Lcd_ScreenWidth                        
+00001c36  Lcd_TouchTrim                          
 000004c4  MAC                                    
 000004da  MAC32H                                 
 000004db  MAC32H_H                               
@@ -1858,15 +1858,15 @@ address   name
 00002400  __STACK_END                            
 000000a0  __STACK_SIZE                           
 000000a0  __SYSMEM_SIZE                          
-00004c94  __TI_CINIT_Base                        
-00004ca4  __TI_CINIT_Limit                       
-00004ca4  __TI_CINIT_Warm                        
-00004c82  __TI_Handler_Table_Base                
-00004c8e  __TI_Handler_Table_Limit               
-0000486e  __TI_ISR_TRAP                          
-00011400  __TI_auto_init_nobinit_nopinit_hold_wdt
-000110b6  __TI_decompress_lzss                   
-00011a62  __TI_decompress_none                   
+00004ef6  __TI_CINIT_Base                        
+00004f06  __TI_CINIT_Limit                       
+00004f06  __TI_CINIT_Warm                        
+00004ee4  __TI_Handler_Table_Base                
+00004ef0  __TI_Handler_Table_Limit               
+00004868  __TI_ISR_TRAP                          
+00011350  __TI_auto_init_nobinit_nopinit_hold_wdt
+00011038  __TI_decompress_lzss                   
+000119b0  __TI_decompress_none                   
 0000ffc6  __TI_int27                             
 0000ffc8  __TI_int28                             
 0000ffca  __TI_int29                             
@@ -1898,82 +1898,80 @@ address   name
 ffffffff  __TI_pprof_out_hndl                    
 ffffffff  __TI_prof_data_size                    
 ffffffff  __TI_prof_data_start                   
-00011938  __TI_zero_init_nomemset                
+000118a4  __TI_zero_init_nomemset                
 ffffffff  __c_args__                             
 00000001  __mpu_enable                           
-0001181c  __mpu_init                             
-00011874  __mspabi_divi                          
-00011692  __mspabi_divli                         
-00011a38  __mspabi_divu                          
-000113a8  __mspabi_divul                         
-00011a0a  __mspabi_mpyi_f5hw                     
-00011980  __mspabi_mpyl_f5hw                     
-00011874  __mspabi_remi                          
-00011692  __mspabi_remli                         
-00011a38  __mspabi_remu                          
-000113a8  __mspabi_remul                         
-00011ad6  __mspabi_slli                          
-00011ae0  __mspabi_srli                          
-0001170a  __mspabi_srll_1                        
-000116e6  __mspabi_srll_10                       
-000116e2  __mspabi_srll_11                       
-000116de  __mspabi_srll_12                       
-000116da  __mspabi_srll_13                       
-000116d6  __mspabi_srll_14                       
-000116d2  __mspabi_srll_15                       
-00011706  __mspabi_srll_2                        
-00011702  __mspabi_srll_3                        
-000116fe  __mspabi_srll_4                        
-000116fa  __mspabi_srll_5                        
-000116f6  __mspabi_srll_6                        
-000116f2  __mspabi_srll_7                        
-000116ee  __mspabi_srll_8                        
-000116ea  __mspabi_srll_9                        
-0000484e  _c_int00_noargs_mpu                    
-00001c40  _lock                                  
-00011b00  _nop                                   
+00011788  __mpu_init                             
+000117e0  __mspabi_divi                          
+000115ce  __mspabi_divli                         
+00011986  __mspabi_divu                          
+000112f8  __mspabi_divul                         
+00011958  __mspabi_mpyi_f5hw                     
+000118c8  __mspabi_mpyl_f5hw                     
+000117e0  __mspabi_remi                          
+000115ce  __mspabi_remli                         
+00011986  __mspabi_remu                          
+000112f8  __mspabi_remul                         
+00011a1a  __mspabi_slli                          
+00011a24  __mspabi_srli                          
+00011646  __mspabi_srll_1                        
+00011622  __mspabi_srll_10                       
+0001161e  __mspabi_srll_11                       
+0001161a  __mspabi_srll_12                       
+00011616  __mspabi_srll_13                       
+00011612  __mspabi_srll_14                       
+0001160e  __mspabi_srll_15                       
+00011642  __mspabi_srll_2                        
+0001163e  __mspabi_srll_3                        
+0001163a  __mspabi_srll_4                        
+00011636  __mspabi_srll_5                        
+00011632  __mspabi_srll_6                        
+0001162e  __mspabi_srll_7                        
+0001162a  __mspabi_srll_8                        
+00011626  __mspabi_srll_9                        
+00004848  _c_int00_noargs_mpu                    
+00001c3c  _lock                                  
+00011a48  _nop                                   
 0000fffe  _reset_vector                          
 00002360  _stack                                 
 00004400  _sys_memory                            
-00011b02  _system_post_cinit                     
-00011acc  _system_pre_init                       
-00001c44  _unlock                                
-00011af8  abort                                  
-00001c2e  adcResult                              
+00011a4a  _system_post_cinit                     
+00011a42  _system_pre_init                       
+00001c40  _unlock                                
+00011a3c  abort                                  
 0001095e  aligned_alloc                          
-00001c32  apple                                  
-000119a4  config_System_Clocks                   
-00011454  dequeue                                
-000112ea  drawRect                               
-000114a8  enqueue                                
-00001c48  foodEatenFlag                          
+00001c2e  apple                                  
+000118ec  config_System_Clocks                   
+00011480  dequeue                                
+00011122  drawRect                               
+000114c4  enqueue                                
+00001c44  foodEatenFlag                          
 00004800  fram_ipe_end                           
 00004800  fram_ipe_start                         
 00004400  fram_rw_start                          
 00004800  fram_rx_start                          
 00010a70  free                                   
-00011a84  freeSnake                              
+000119d2  freeSnake                              
 00001c00  g_sContext                             
-00004c36  g_sCrystalfontz128x128                 
-00004b6e  g_sFontFixed6x8                        
-00001c4a  gameOver                               
-00011282  handleCollision                        
-000114f4  initSnake                              
-0001195c  init_ADC                               
-00010ed6  init_graphics                          
+00004e98  g_sCrystalfontz128x128                 
+00004dd0  g_sFontCm12                            
+00001c46  gameOver                               
+000111e8  handleCollision                        
+00011508  initSnake                              
+00011836  init_ADC                               
+00011186  init_Graphics                          
 00010e3c  main                                   
-00011aea  malloc                                 
+00011a2e  malloc                                 
 0001095e  memalign                               
-00011a4e  memcpy                                 
-00011216  moveSnake                              
+0001199c  memcpy                                 
+000112a0  moveSnake                              
 0000a501  mpu_ctl0_value                         
 00001513  mpu_sam_value                          
 00000480  mpu_segment_border1                    
 00000480  mpu_segment_border2                    
 00004800  nextFrame                              
-00010fc8  placeApple                             
-00011652  rand                                   
-0001112c  read_Joystick                          
+00010f4a  placeApple                             
+0001158e  rand                                   
 00001c1c  snake                                  
 
 
@@ -3365,19 +3363,18 @@ address   name
 00001513  mpu_sam_value                          
 00001c00  g_sContext                             
 00001c1c  snake                                  
-00001c2e  adcResult                              
-00001c32  apple                                  
-00001c36  Lcd_ScreenHeigth                       
-00001c38  Lcd_ScreenWidth                        
-00001c3a  Lcd_TouchTrim                          
-00001c3c  Lcd_FlagRead                           
-00001c3d  Lcd_FontSolid                          
-00001c3e  Lcd_Orientation                        
-00001c3f  Lcd_PenSolid                           
-00001c40  _lock                                  
-00001c44  _unlock                                
-00001c48  foodEatenFlag                          
-00001c4a  gameOver                               
+00001c2e  apple                                  
+00001c32  Lcd_ScreenHeigth                       
+00001c34  Lcd_ScreenWidth                        
+00001c36  Lcd_TouchTrim                          
+00001c38  Lcd_FlagRead                           
+00001c39  Lcd_FontSolid                          
+00001c3a  Lcd_Orientation                        
+00001c3b  Lcd_PenSolid                           
+00001c3c  _lock                                  
+00001c40  _unlock                                
+00001c44  foodEatenFlag                          
+00001c46  gameOver                               
 00002360  _stack                                 
 00002400  __STACK_END                            
 00004400  _sys_memory                            
@@ -3386,15 +3383,15 @@ address   name
 00004800  fram_ipe_start                         
 00004800  fram_rx_start                          
 00004800  nextFrame                              
-0000484e  _c_int00_noargs_mpu                    
-0000486e  __TI_ISR_TRAP                          
-00004b6e  g_sFontFixed6x8                        
-00004c36  g_sCrystalfontz128x128                 
-00004c82  __TI_Handler_Table_Base                
-00004c8e  __TI_Handler_Table_Limit               
-00004c94  __TI_CINIT_Base                        
-00004ca4  __TI_CINIT_Limit                       
-00004ca4  __TI_CINIT_Warm                        
+00004848  _c_int00_noargs_mpu                    
+00004868  __TI_ISR_TRAP                          
+00004dd0  g_sFontCm12                            
+00004e98  g_sCrystalfontz128x128                 
+00004ee4  __TI_Handler_Table_Base                
+00004ef0  __TI_Handler_Table_Limit               
+00004ef6  __TI_CINIT_Base                        
+00004f06  __TI_CINIT_Limit                       
+00004f06  __TI_CINIT_Warm                        
 0000a501  mpu_ctl0_value                         
 0000ffc6  __TI_int27                             
 0000ffc8  __TI_int28                             
@@ -3435,77 +3432,76 @@ address   name
 00010cf0  Graphics_fillRectangle                 
 00010d9e  Crystalfontz128x128_SetDrawFrame       
 00010e3c  main                                   
-00010ed6  init_graphics                          
-00010f50  Graphics_drawStringCentered            
-00010fc8  placeApple                             
-000110b6  __TI_decompress_lzss                   
-0001112c  read_Joystick                          
-00011216  moveSnake                              
-00011282  handleCollision                        
-000112ea  drawRect                               
-000113a8  __mspabi_divul                         
-000113a8  __mspabi_remul                         
-00011400  __TI_auto_init_nobinit_nopinit_hold_wdt
-00011454  dequeue                                
-000114a8  enqueue                                
-000114f4  initSnake                              
-0001158a  Crystalfontz128x128_SetOrientation     
-00011612  HAL_LCD_PortInit                       
-00011652  rand                                   
-00011692  __mspabi_divli                         
-00011692  __mspabi_remli                         
-000116d2  __mspabi_srll_15                       
-000116d6  __mspabi_srll_14                       
-000116da  __mspabi_srll_13                       
-000116de  __mspabi_srll_12                       
-000116e2  __mspabi_srll_11                       
-000116e6  __mspabi_srll_10                       
-000116ea  __mspabi_srll_9                        
-000116ee  __mspabi_srll_8                        
-000116f2  __mspabi_srll_7                        
-000116f6  __mspabi_srll_6                        
-000116fa  __mspabi_srll_5                        
-000116fe  __mspabi_srll_4                        
-00011702  __mspabi_srll_3                        
-00011706  __mspabi_srll_2                        
-0001170a  __mspabi_srll_1                        
-0001174c  Graphics_initContext                   
-0001181c  __mpu_init                             
-00011874  __mspabi_divi                          
-00011874  __mspabi_remi                          
-000118ca  HAL_LCD_SpiInit                        
-000118f0  HAL_LCD_writeCommand                   
-00011914  HAL_LCD_writeData                      
-00011938  __TI_zero_init_nomemset                
-0001195c  init_ADC                               
-00011980  __mspabi_mpyl_f5hw                     
-000119a4  config_System_Clocks                   
-000119c0  Graphics_drawHorizontalLineOnDisplay   
-000119da  Graphics_setBackgroundColor            
-000119f2  Graphics_setForegroundColor            
-00011a0a  __mspabi_mpyi_f5hw                     
-00011a38  __mspabi_divu                          
-00011a38  __mspabi_remu                          
-00011a4e  memcpy                                 
-00011a62  __TI_decompress_none                   
-00011a74  Graphics_clearDisplay                  
-00011a84  freeSnake                              
-00011a94  Graphics_clearDisplayOnDisplay         
-00011aa2  Graphics_drawPixelOnDisplay            
-00011ab0  Graphics_fillRectangleOnDisplay        
-00011abe  Graphics_translateColorOnDisplay       
-00011acc  _system_pre_init                       
-00011ad6  __mspabi_slli                          
-00011ae0  __mspabi_srli                          
-00011aea  malloc                                 
-00011af2  Graphics_setFont                       
-00011af8  C$$EXIT                                
-00011af8  abort                                  
-00011b00  _nop                                   
-00011b02  _system_post_cinit                     
+00010ed2  Graphics_drawStringCentered            
+00010f4a  placeApple                             
+00011038  __TI_decompress_lzss                   
+00011122  drawRect                               
+00011186  init_Graphics                          
+000111e8  handleCollision                        
+000112a0  moveSnake                              
+000112f8  __mspabi_divul                         
+000112f8  __mspabi_remul                         
+00011350  __TI_auto_init_nobinit_nopinit_hold_wdt
+000113a4  HAL_LCD_PortInit                       
+0001143a  Crystalfontz128x128_SetOrientation     
+00011480  dequeue                                
+000114c4  enqueue                                
+00011508  initSnake                              
+0001158e  rand                                   
+000115ce  __mspabi_divli                         
+000115ce  __mspabi_remli                         
+0001160e  __mspabi_srll_15                       
+00011612  __mspabi_srll_14                       
+00011616  __mspabi_srll_13                       
+0001161a  __mspabi_srll_12                       
+0001161e  __mspabi_srll_11                       
+00011622  __mspabi_srll_10                       
+00011626  __mspabi_srll_9                        
+0001162a  __mspabi_srll_8                        
+0001162e  __mspabi_srll_7                        
+00011632  __mspabi_srll_6                        
+00011636  __mspabi_srll_5                        
+0001163a  __mspabi_srll_4                        
+0001163e  __mspabi_srll_3                        
+00011642  __mspabi_srll_2                        
+00011646  __mspabi_srll_1                        
+00011688  Graphics_initContext                   
+000116fe  HAL_LCD_SpiInit                        
+00011788  __mpu_init                             
+000117e0  __mspabi_divi                          
+000117e0  __mspabi_remi                          
+00011836  init_ADC                               
+0001185c  HAL_LCD_writeCommand                   
+00011880  HAL_LCD_writeData                      
+000118a4  __TI_zero_init_nomemset                
+000118c8  __mspabi_mpyl_f5hw                     
+000118ec  config_System_Clocks                   
+0001190e  Graphics_drawHorizontalLineOnDisplay   
+00011928  Graphics_setBackgroundColor            
+00011940  Graphics_setForegroundColor            
+00011958  __mspabi_mpyi_f5hw                     
+00011986  __mspabi_divu                          
+00011986  __mspabi_remu                          
+0001199c  memcpy                                 
+000119b0  __TI_decompress_none                   
+000119c2  Graphics_clearDisplay                  
+000119d2  freeSnake                              
+000119e2  Graphics_clearDisplayOnDisplay         
+000119f0  Graphics_drawPixelOnDisplay            
+000119fe  Graphics_fillRectangleOnDisplay        
+00011a0c  Graphics_translateColorOnDisplay       
+00011a1a  __mspabi_slli                          
+00011a24  __mspabi_srli                          
+00011a2e  malloc                                 
+00011a36  Graphics_setFont                       
+00011a3c  C$$EXIT                                
+00011a3c  abort                                  
+00011a42  _system_pre_init                       
+00011a48  _nop                                   
+00011a4a  _system_post_cinit                     
 ffffffff  __TI_pprof_out_hndl                    
 ffffffff  __TI_prof_data_size                    
 ffffffff  __TI_prof_data_start                   
 ffffffff  __c_args__                             
 
-[1526 symbols]
+[1524 symbols]
