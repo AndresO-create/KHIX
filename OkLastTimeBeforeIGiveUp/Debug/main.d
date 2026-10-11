@@ -10,6 +10,8 @@ main.obj: /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/i
 main.obj: /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/_ti_config.h
 main.obj: /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/linkage.h
 main.obj: /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/sys/cdefs.h
+main.obj: /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/string.h
+main.obj: /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/xlocale/_string.h
 main.obj: ../GrLib/grlib/grlib.h
 main.obj: /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/stdint.h
 main.obj: /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/_stdint40.h
@@ -42,6 +44,10 @@ main.obj: /Users/andresortiz/workspace_ccstheia/OkLastTimeBeforeIGiveUp/Grlib/gr
 /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/linkage.h:
 
 /Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/sys/cdefs.h:
+
+/Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/string.h:
+
+/Applications/ti/ccs2101/ccs/tools/compiler/ti-cgt-msp430_21.6.3.LTS/include/xlocale/_string.h:
 
 ../GrLib/grlib/grlib.h:
 

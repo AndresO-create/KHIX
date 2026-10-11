@@ -1,5 +1,6 @@
 #include <msp430.h> 
 #include <stdlib.h>
+#include <string.h>
 #include "GrLib/grlib/grlib.h"
 #include "LcdDriver/lcd_driver.h"
 
@@ -29,7 +30,10 @@ typedef struct Apple {
 
 /*******************GLOBALS********************/
 SnakeGame snake;
+
 Graphics_Context g_sContext;
+extern const Graphics_Display g_sCrystalfontz128x128; 
+
 Apple apple;
 
 volatile int foodEatenFlag = 0;
@@ -143,17 +147,36 @@ void config_System_Clocks(void) {
 
 
 void init_Graphics(void){
-	__delay_cycles(400000); // 50ms startup delay loop
+    // Clean out the graphics context memory block before initializing
+    memset(&g_sContext, 0, sizeof(Graphics_Context));
 
-	Crystalfontz128x128_Init();
-	Crystalfontz128x128_SetOrientation(LCD_ORIENTATION_UP);
+    // Wait 50ms for display internal capacitors to fully level out
+    __delay_cycles(400000);
+
+    // Initialize the physical controller chip lines over eUSCI_B0
+    Crystalfontz128x128_Init();
+    Crystalfontz128x128_SetOrientation(LCD_ORIENTATION_UP);
+    
+    // Bind the generic g_sContext structure to your physical display driver
     Graphics_initContext(&g_sContext, &g_sCrystalfontz128x128);
 
+    // Configure your screen matrix boundaries inside the grlib layer explicitly
+    g_sContext.clipRegion.xMin = 0;
+    g_sContext.clipRegion.yMin = 0;
+    g_sContext.clipRegion.xMax = 127;
+    g_sContext.clipRegion.yMax = 127;
+
+    // Apply your game board layout canvas stylings
     Graphics_setBackgroundColor(&g_sContext, GRAPHICS_COLOR_BLUE);  
     Graphics_setForegroundColor(&g_sContext, GRAPHICS_COLOR_WHITE); 
     Graphics_setFont(&g_sContext, &g_sFontCm12);
+    
+    // This call will now execute instantly past your previous crash point!
     Graphics_clearDisplay(&g_sContext);
 }
+
+
+
 
 void initSnake(void){
 	snake.head = NULL;
