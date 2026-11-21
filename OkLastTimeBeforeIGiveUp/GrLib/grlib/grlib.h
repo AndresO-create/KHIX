@@ -600,7 +600,7 @@ typedef struct Graphics_Context
 #define GRAPHICS_COLOR_GAINSBORO				 0x00DCDCDC
 #define GRAPHICS_COLOR_GHOST_WHITE				 0x00F8F8FF
 #define GRAPHICS_COLOR_GOLD						 0x00FFD700
-#define GRAPHICS_COLOR_GOLDENRON				 0x00DAA520
+#define GRAPHICS_COLOR_GOLDENROD				 0x00DAA520
 #define GRAPHICS_COLOR_GRAY						 0x00808080
 #define GRAPHICS_COLOR_GREEN					 0x00008000
 #define GRAPHICS_COLOR_GREEN_YELLOW				 0x00ADFF2F
@@ -866,6 +866,18 @@ extern const Graphics_Font g_sFontCmtt44;
 extern const Graphics_Font g_sFontCmtt46;
 extern const Graphics_Font g_sFontCmtt48;
 extern const Graphics_Font g_sFontFixed6x8;
+
+// Added by Zak
+extern const Graphics_Font g_sFontlucidasans8x15;
+extern const Graphics_Font g_sFontlucidabright6x12;
+extern const Graphics_Font g_sFontlucidasans6x11;
+extern const Graphics_Font g_sFontfixed7x13;
+extern const Graphics_Font g_sFontclean5x8;
+extern const Graphics_Font g_sFontcourier7x13b;
+extern const Graphics_Font g_sFontcourier7x13;
+extern const Graphics_Font g_sFontclean7x10;
+
+
 
 //*****************************************************************************
 //

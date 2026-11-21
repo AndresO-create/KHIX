@@ -1,71 +1,44 @@
+// This code was ported from TI's sample code. See Copyright notice at the bottom of this file.
+
 #include "Grlib/grlib/grlib.h"
 #include "LcdDriver/lcd_driver.h"
+#include "LcdDriver/lower_driver.h"
 #include "msp430fr6989.h"
 #include <stdint.h>
-#include <stddef.h>
 
 uint8_t Lcd_Orientation;
-//uint16_t Lcd_ScreenWidth, Lcd_ScreenHeigth;
+uint16_t Lcd_ScreenWidth, Lcd_ScreenHeigth;
 uint8_t Lcd_PenSolid, Lcd_FontSolid, Lcd_FlagRead;
 uint16_t Lcd_TouchTrim;
 
-// Low-level internal port setup prototypes
-void HAL_LCD_PortInit(void);
-void HAL_LCD_SpiInit(void);
-void HAL_LCD_writeCommand(uint8_t command);
-void HAL_LCD_writeData(uint8_t data);
-
-// Forward declarations for function table linking unblocking
-void Crystalfontz128x128_PixelDraw(void *pvDisplayData, int16_t lX, int16_t lY, uint16_t ulValue);
-void Crystalfontz128x128_PixelDrawMultiple(void *pvDisplayData, int16_t lX, int16_t lY, int16_t lX0, int16_t lCount, int16_t lBPP, const uint8_t *pucData, const uint32_t *pucPalette);
-void Crystalfontz128x128_LineDrawH(void *pvDisplayData, int16_t lX1, int16_t lX2, int16_t lY, uint16_t ulValue);
-void Crystalfontz128x128_LineDrawV(void *pvDisplayData, int16_t lX, int16_t lY1, int16_t lY2, uint16_t ulValue);
-void Crystalfontz128x128_RectFill(void *pvDisplayData, const Graphics_Rectangle *psRect, uint16_t ulValue);
-uint32_t Crystalfontz128x128_ColorTranslate(void *pvDisplayData, uint32_t ulValue);
-void Crystalfontz128x128_Flush(void *pvDisplayData);
-void Crystalfontz128x128_ClearDisplay(void *pvDisplayData, uint16_t ulValue);
-
-// OFFICIAL TI GRLIB STRUCT BINDING MATRIX
-// This 44-byte format perfectly matches the structure layouts inside grlib.h and context.c
-const Graphics_Display g_sCrystalfontz128x128 =
-{
-    sizeof(Graphics_Display),
-    NULL,                                  // displayData pointer
-    128,                                   // width -> Matches the 5908 memory slot exactly!
-    128,                                   // heigth -> Matches the 4166 memory slot exactly!
-    Crystalfontz128x128_PixelDraw,         // Functions realign to their correct tracks
-    Crystalfontz128x128_PixelDrawMultiple,
-    Crystalfontz128x128_LineDrawH,
-    Crystalfontz128x128_LineDrawV,
-    Crystalfontz128x128_RectFill,
-    Crystalfontz128x128_ColorTranslate,
-    Crystalfontz128x128_Flush,
-    Crystalfontz128x128_ClearDisplay       // Now populates slot 10 safely, preventing the NULL pointer crash!
-};
-
-
-
-
+//*****************************************************************************
+//
+//! Initializes the display driver.
+//!
+//! This function initializes the ST7735 display controller on the panel,
+//! preparing it to display data.
+//!
+//! \return None.
+//
+//*****************************************************************************
 void Crystalfontz128x128_Init(void)
 {
     HAL_LCD_PortInit();
     HAL_LCD_SpiInit();
 
-    // Hardware Reset Handshake Pulse
-    P3OUT |= BIT7;              
-    __delay_cycles(100000);     
-    P3OUT &= ~BIT7;             
-    __delay_cycles(200000);     
-    P3OUT |= BIT7;              
-    __delay_cycles(800000);     
+    // Reset pulse
+    P9OUT &= ~BIT4;             // Reset pin low
+    __delay_cycles(2*200);
+    P9OUT |= BIT4;              // Reset pin high
+    __delay_cycles(2*480);
 
-    HAL_LCD_writeCommand(CM_SLPOUT); 
-    __delay_cycles(1000000);         
+    HAL_LCD_writeCommand(CM_SLPOUT);
+    __delay_cycles(200);
 
-    HAL_LCD_writeCommand(CM_GAMSET); 
+    HAL_LCD_writeCommand(CM_GAMSET);
     HAL_LCD_writeData(0x04);
 
-    HAL_LCD_writeCommand(CM_SETPWCTR); 
+    HAL_LCD_writeCommand(CM_SETPWCTR);
     HAL_LCD_writeData(0x0A);
     HAL_LCD_writeData(0x14);
 
@@ -73,18 +46,17 @@ void Crystalfontz128x128_Init(void)
     HAL_LCD_writeData(0x0A);
     HAL_LCD_writeData(0x00);
 
-    HAL_LCD_writeCommand(CM_COLMOD); 
+    HAL_LCD_writeCommand(CM_COLMOD);
     HAL_LCD_writeData(0x05);
-    __delay_cycles(50000);
+    __delay_cycles(10);
 
     HAL_LCD_writeCommand(CM_MADCTL);
     HAL_LCD_writeData(CM_MADCTL_BGR);
 
-    HAL_LCD_writeCommand(CM_NORON);  
-    __delay_cycles(50000);
+    HAL_LCD_writeCommand(CM_NORON);
 
-    //Lcd_ScreenWidth  = LCD_VERTICAL_MAX;
-    //Lcd_ScreenHeigth = LCD_HORIZONTAL_MAX;
+    Lcd_ScreenWidth  = LCD_VERTICAL_MAX;
+    Lcd_ScreenHeigth = LCD_HORIZONTAL_MAX;
     Lcd_PenSolid  = 0;
     Lcd_FontSolid = 1;
     Lcd_FlagRead  = 0;
@@ -95,209 +67,537 @@ void Crystalfontz128x128_Init(void)
     int i;
     for (i = 0; i < 16384; i++)
     {
-        HAL_LCD_writeData(0x00); 
-        HAL_LCD_writeData(0x1F); 
+        HAL_LCD_writeData(0xFF);
+        HAL_LCD_writeData(0xFF);
     }
 
-    __delay_cycles(100000);
-    HAL_LCD_writeCommand(CM_DISPON); 
+    __delay_cycles(10);
+    HAL_LCD_writeCommand(CM_DISPON);
 }
+
 
 void Crystalfontz128x128_SetDrawFrame(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
     switch (Lcd_Orientation) {
-        case 0:  x0 += 2; y0 += 3; x1 += 2; y1 += 3; break;
-        case 1:  x0 += 3; y0 += 2; x1 += 3; y1 += 2; break;
-        case 2:  x0 += 2; y0 += 1; x1 += 2; y1 += 1; break;
-        case 3:  x0 += 1; y0 += 2; x1 += 1; y1 += 2; break;
-        default: break;
+        case 0:
+            x0 += 2;
+            y0 += 3;
+            x1 += 2;
+            y1 += 3;
+            break;
+        case 1:
+            x0 += 3;
+            y0 += 2;
+            x1 += 3;
+            y1 += 2;
+            break;
+        case 2:
+            x0 += 2;
+            y0 += 1;
+            x1 += 2;
+            y1 += 1;
+            break;
+        case 3:
+            x0 += 1;
+            y0 += 2;
+            x1 += 1;
+            y1 += 2;
+            break;
+        default:
+            break;
     }
 
     HAL_LCD_writeCommand(CM_CASET);
-    HAL_LCD_writeData((uint8_t)(x0 >> 8)); HAL_LCD_writeData((uint8_t)(x0));
-    HAL_LCD_writeData((uint8_t)(x1 >> 8)); HAL_LCD_writeData((uint8_t)(x1));
+    HAL_LCD_writeData((uint8_t)(x0 >> 8));
+    HAL_LCD_writeData((uint8_t)(x0));
+    HAL_LCD_writeData((uint8_t)(x1 >> 8));
+    HAL_LCD_writeData((uint8_t)(x1));
 
     HAL_LCD_writeCommand(CM_RASET);
-    HAL_LCD_writeData((uint8_t)(y0 >> 8)); HAL_LCD_writeData((uint8_t)(y0));
-    HAL_LCD_writeData((uint8_t)(y1 >> 8)); HAL_LCD_writeData((uint8_t)(y1));
+    HAL_LCD_writeData((uint8_t)(y0 >> 8));
+    HAL_LCD_writeData((uint8_t)(y0));
+    HAL_LCD_writeData((uint8_t)(y1 >> 8));
+    HAL_LCD_writeData((uint8_t)(y1));
 }
 
+
+//*****************************************************************************
+//
+//! Sets the LCD Orientation.
+//!
+//! \param orientation is the desired orientation for the LCD. Valid values are:
+//!           - \b LCD_ORIENTATION_UP,
+//!           - \b LCD_ORIENTATION_LEFT,
+//!           - \b LCD_ORIENTATION_DOWN,
+//!           - \b LCD_ORIENTATION_RIGHT,
+//!
+//! This function sets the orientation of the LCD
+//!
+//! \return None.
+//
+//*****************************************************************************
 void Crystalfontz128x128_SetOrientation(uint8_t orientation)
 {
     Lcd_Orientation = orientation;
     HAL_LCD_writeCommand(CM_MADCTL);
     switch (Lcd_Orientation) {
-        case LCD_ORIENTATION_UP:    HAL_LCD_writeData(CM_MADCTL_MX | CM_MADCTL_MY | CM_MADCTL_BGR); break;
-        case LCD_ORIENTATION_LEFT:  HAL_LCD_writeData(CM_MADCTL_MY | CM_MADCTL_MV | CM_MADCTL_BGR); break;
-        case LCD_ORIENTATION_DOWN:  HAL_LCD_writeData(CM_MADCTL_BGR); break;
-        case LCD_ORIENTATION_RIGHT: HAL_LCD_writeData(CM_MADCTL_MX | CM_MADCTL_MV | CM_MADCTL_BGR); break;
+        case LCD_ORIENTATION_UP:
+            HAL_LCD_writeData(CM_MADCTL_MX | CM_MADCTL_MY | CM_MADCTL_BGR);
+            break;
+        case LCD_ORIENTATION_LEFT:
+            HAL_LCD_writeData(CM_MADCTL_MY | CM_MADCTL_MV | CM_MADCTL_BGR);
+            break;
+        case LCD_ORIENTATION_DOWN:
+            HAL_LCD_writeData(CM_MADCTL_BGR);
+            break;
+        case LCD_ORIENTATION_RIGHT:
+            HAL_LCD_writeData(CM_MADCTL_MX | CM_MADCTL_MV | CM_MADCTL_BGR);
+            break;
     }
 }
 
-void HAL_LCD_PortInit(void)
+
+//*****************************************************************************
+//
+//! Draws a pixel on the screen.
+//!
+//! \param pvDisplayData is a pointer to the driver-specific data for this
+//! display driver.
+//! \param lX is the X coordinate of the pixel.
+//! \param lY is the Y coordinate of the pixel.
+//! \param ulValue is the color of the pixel.
+//!
+//! This function sets the given pixel to a particular color.  The coordinates
+//! of the pixel are assumed to be within the extents of the display.
+//!
+//! \return None.
+//
+//*****************************************************************************
+static void Crystalfontz128x128_PixelDraw(void *pvDisplayData, int16_t lX, int16_t lY,
+                                   uint16_t ulValue)
 {
-    // 1. Maintain clean bare-metal compliance: Neutralize onboard RGB LED channels
-    P2DIR &= ~BIT6; P2OUT &= ~BIT6; 
-    P3DIR &= ~BIT6; P3OUT &= ~BIT6; 
 
-    // 2. Configure official LCD Control Pins as Clean Outputs using Symbolic Masks
-    P3DIR |= BIT7;  // P3.7 = LCD_RESET (Reset Line)
-    P3DIR |= BIT1;  // P3.1 = LCD_DC    (Data / Command Select)
-    P3DIR |= BIT4;  // P3.4 = LCD_CS    (Chip Select Pin)
-
-    // 3. Establish initial active and idle line states
-    P3OUT |= BIT4;  // LCD_CS = 1 (Display Idle / De-selected)
-    P3OUT &= ~BIT1; // LCD_DC = 0
-
-    // 4. UNBLOCK MASTER TIMING REGISTERS: Force P1.5 (Slave Transmit Enable) LOW
-    // This stops the eUSCI_B0 module from locking its buffers in slave-halt mode
-    P1DIR |= BIT5;
-    P1OUT &= ~BIT5; 
-
-    // 5. OFFICIAL CHIP DATA SHEET RE-ALIGNMENT: 
-    // To route P1.4 (Clock) and P1.6 (Data Out) exclusively to the eUSCI_B0 SPI engine,
-    // you must explicitly set BOTH: SEL1 high AND SEL0 low!
-    P1SEL1 |= (BIT4 | BIT6);   // Set SEL1 bits high
-    P1SEL0 &= ~(BIT4 | BIT6);  // CRITICAL FIX: Explicitly clear SEL0 bits low!
-}
-
-
-void HAL_LCD_SpiInit(void)
-{
-    // Put the eUSCI_B0 peripheral module into Software Reset
-    UCB0CTLW0 |= UCSWRST;
-
-    // SPI Mode 0 alignment: Ensure Phase and Polarity match standard screen protocols
-    UCB0CTLW0 &= ~UCCKPH; 
-    UCB0CTLW0 &= ~UCCKPL; 
-    
-    // Master Mode, MSB first, Synchronous SPI mode, Clocked from unthrottled 8MHz SMCLK
-    UCB0CTLW0 |= UCMSB | UCMST | UCSYNC | UCSSEL__SMCLK;
-
-    // Set bit clock divider (8 MHz SMCLK divided by 2 = pure 4 MHz SPI clock transmission)
-    UCB0BR0 = 0x02; 
-    UCB0BR1 = 0x00;
-
-    // Release software reset to activate physical hardware lines
-    UCB0CTLW0 &= ~UCSWRST;
-}
-
-
-void HAL_LCD_writeCommand(uint8_t command)
-{
-    P3OUT &= ~BIT1; // LCD_DC = 0 (Command Mode)
-    P3OUT &= ~BIT4; // LCD_CS = 0 (Display Active)
-
-    // Wait until the hardware transmit buffer is ready to accept a byte
-    while ((UCB0IFG & UCTXIFG) == 0); 
-    UCB0TXBUF = command;              
-
-    // Wait for the bit shifter register to empty completely before releasing lines
-    while ((UCB0STATW & UCBUSY) != 0); 
-
-    P3OUT |= BIT4;  // LCD_CS = 1 (Display Idle)
-}
-
-void HAL_LCD_writeData(uint8_t data)
-{
-    P3OUT |= BIT1;  // LCD_DC = 1 (Data Mode)
-    P3OUT &= ~BIT4; // LCD_CS = 0 (Display Active)
-
-    // Wait until the hardware transmit buffer is ready to accept a byte
-    while ((UCB0IFG & UCTXIFG) == 0); 
-    UCB0TXBUF = data;             
-
-    // Wait for the bit shifter register to empty completely before releasing lines
-    while ((UCB0STATW & UCBUSY) != 0); 
-
-    P3OUT |= BIT4;  // LCD_CS = 1 (Display Idle)
-}
-
-
-void Crystalfontz128x128_PixelDraw(void *pvDisplayData, int16_t lX, int16_t lY, uint16_t ulValue)
-{
     Crystalfontz128x128_SetDrawFrame(lX,lY,lX,lY);
+
+    //
+    // Write the pixel value.
+    //
     HAL_LCD_writeCommand(CM_RAMWR);
     HAL_LCD_writeData(ulValue>>8);
     HAL_LCD_writeData(ulValue);
 }
 
-void Crystalfontz128x128_PixelDrawMultiple(void *pvDisplayData, int16_t lX, int16_t lY, int16_t lX0, int16_t lCount, int16_t lBPP, const uint8_t *pucData, const uint32_t *pucPalette)
+
+//*****************************************************************************
+//
+//! Draws a horizontal sequence of pixels on the screen.
+//!
+//! \param pvDisplayData is a pointer to the driver-specific data for this
+//! display driver.
+//! \param lX is the X coordinate of the first pixel.
+//! \param lY is the Y coordinate of the first pixel.
+//! \param lX0 is sub-pixel offset within the pixel data, which is valid for 1
+//! or 4 bit per pixel formats.
+//! \param lCount is the number of pixels to draw.
+//! \param lBPP is the number of bits per pixel; must be 1, 4, or 8.
+//! \param pucData is a pointer to the pixel data.  For 1 and 4 bit per pixel
+//! formats, the most significant bit(s) represent the left-most pixel.
+//! \param pucPalette is a pointer to the palette used to draw the pixels.
+//!
+//! This function draws a horizontal sequence of pixels on the screen, using
+//! the supplied palette.  For 1 bit per pixel format, the palette contains
+//! pre-translated colors; for 4 and 8 bit per pixel formats, the palette
+//! contains 24-bit RGB values that must be translated before being written to
+//! the display.
+//!
+//! \return None.
+//
+//*****************************************************************************
+static void Crystalfontz128x128_PixelDrawMultiple(void *pvDisplayData, int16_t lX,
+                                           int16_t lY, int16_t lX0, int16_t lCount,
+                                           int16_t lBPP,
+                                           const uint8_t *pucData,
+                                           const uint32_t *pucPalette)
 {
     uint16_t Data;
-    Crystalfontz128x128_SetDrawFrame(lX,lY,lX+lCount-1,lY);
+
+    //
+    // Set the cursor increment to left to right, followed by top to bottom.
+    //
+    Crystalfontz128x128_SetDrawFrame(lX,lY,lCount,127);
     HAL_LCD_writeCommand(CM_RAMWR);
+
+    //
+    // Determine how to interpret the pixel data based on the number of bits
+    // per pixel.
+    //
     switch(lBPP)
     {
+        // The pixel data is in 1 bit per pixel format
         case 1:
+        {
+            // Loop while there are more pixels to draw
             while(lCount > 0)
             {
+                // Get the next byte of image data
                 Data = *pucData++;
+
+                // Loop through the pixels in this byte of image data
                 for(; (lX0 < 8) && lCount; lX0++, lCount--)
                 {
-                    uint16_t color = ((uint16_t *)pucPalette)[(Data >> (7 - lX0)) & 1];
-                    HAL_LCD_writeData(color >> 8); HAL_LCD_writeData(color);
+                    // Draw this pixel in the appropriate color
+                    HAL_LCD_writeData((((uint32_t *)pucPalette)[(Data >>
+                                                             (7 - lX0)) & 1])>>8);
+                    HAL_LCD_writeData(((uint32_t *)pucPalette)[(Data >>
+                                                             (7 - lX0)) & 1]);
                 }
+
+                // Start at the beginning of the next byte of image data
                 lX0 = 0;
             }
+            // The image data has been drawn
+
             break;
+        }
+
+        // The pixel data is in 4 bit per pixel format
+        case 4:
+        {
+            // Loop while there are more pixels to draw.  "Duff's device" is
+            // used to jump into the middle of the loop if the first nibble of
+            // the pixel data should not be used.  Duff's device makes use of
+            // the fact that a case statement is legal anywhere within a
+            // sub-block of a switch statement.  See
+            // http://en.wikipedia.org/wiki/Duff's_device for detailed
+            // information about Duff's device.
+            switch(lX0 & 1)
+            {
+                case 0:
+
+                    while(lCount)
+                    {
+                        // Get the upper nibble of the next byte of pixel data
+                        // and extract the corresponding entry from the palette
+                        Data = (*pucData >> 4);
+                        Data = (*(uint16_t *)(pucPalette + Data));
+                        // Write to LCD screen
+                        HAL_LCD_writeData(Data>>8);
+                        HAL_LCD_writeData(Data);
+
+                        // Decrement the count of pixels to draw
+                        lCount--;
+
+                        // See if there is another pixel to draw
+                        if(lCount)
+                        {
+                case 1:
+                            // Get the lower nibble of the next byte of pixel
+                            // data and extract the corresponding entry from
+                            // the palette
+                            Data = (*pucData++ & 15);
+                            Data = (*(uint16_t *)(pucPalette + Data));
+                            // Write to LCD screen
+                            HAL_LCD_writeData(Data>>8);
+                            HAL_LCD_writeData(Data);
+
+                            // Decrement the count of pixels to draw
+                            lCount--;
+                        }
+                    }
+            }
+            // The image data has been drawn.
+
+            break;
+        }
+
+        // The pixel data is in 8 bit per pixel format
+        case 8:
+        {
+            // Loop while there are more pixels to draw
+            while(lCount--)
+            {
+                // Get the next byte of pixel data and extract the
+                // corresponding entry from the palette
+                Data = *pucData++;
+                Data = (*(uint16_t *)(pucPalette + Data));
+                // Write to LCD screen
+                HAL_LCD_writeData(Data>>8);
+                HAL_LCD_writeData(Data);
+            }
+            // The image data has been drawn
+            break;
+        }
+
+        //
+        // We are being passed data in the display's native format.  Merely
+        // write it directly to the display.  This is a special case which is
+        // not used by the graphics library but which is helpful to
+        // applications which may want to handle, for example, JPEG images.
+        //
+        case 16:
+        {
+            uint16_t usData;
+
+            // Loop while there are more pixels to draw.
+
+            while(lCount--)
+            {
+                // Get the next byte of pixel data and extract the
+                // corresponding entry from the palette
+                usData = *((uint16_t *)pucData);
+                pucData += 2;
+
+                // Translate this palette entry and write it to the screen
+                HAL_LCD_writeData(usData>>8);
+                HAL_LCD_writeData(usData);
+            }
+        }
     }
 }
 
-void Crystalfontz128x128_LineDrawH(void *pvDisplayData, int16_t lX1, int16_t lX2, int16_t lY, uint16_t ulValue)
+
+//*****************************************************************************
+//
+//! Draws a horizontal line.
+//!
+//! \param pvDisplayData is a pointer to the driver-specific data for this
+//! display driver.
+//! \param lX1 is the X coordinate of the start of the line.
+//! \param lX2 is the X coordinate of the end of the line.
+//! \param lY is the Y coordinate of the line.
+//! \param ulValue is the color of the line.
+//!
+//! This function draws a horizontal line on the display.  The coordinates of
+//! the line are assumed to be within the extents of the display.
+//!
+//! \return None.
+//
+//*****************************************************************************
+static void Crystalfontz128x128_LineDrawH(void *pvDisplayData, int16_t lX1, int16_t lX2,
+                                   int16_t lY, uint16_t ulValue)
 {
-    int16_t i;
+
+
     Crystalfontz128x128_SetDrawFrame(lX1, lY, lX2, lY);
-    HAL_LCD_writeCommand(CM_RAMWR);
-    for(i = lX1; i <= lX2; i++) {
-        HAL_LCD_writeData(ulValue >> 8); HAL_LCD_writeData(ulValue);
-    }
-}
 
-void Crystalfontz128x128_LineDrawV(void *pvDisplayData, int16_t lX, int16_t lY1, int16_t lY2, uint16_t ulValue)
-{
+    //
+    // Write the pixel value.
+    //
     int16_t i;
+    HAL_LCD_writeCommand(CM_RAMWR);
+    for (i = lX1; i <= lX2; i++)
+    {
+        HAL_LCD_writeData(ulValue>>8);
+        HAL_LCD_writeData(ulValue);
+    }
+}
+
+
+//*****************************************************************************
+//
+//! Draws a vertical line.
+//!
+//! \param pvDisplayData is a pointer to the driver-specific data for this
+//! display driver.
+//! \param lX is the X coordinate of the line.
+//! \param lY1 is the Y coordinate of the start of the line.
+//! \param lY2 is the Y coordinate of the end of the line.
+//! \param ulValue is the color of the line.
+//!
+//! This function draws a vertical line on the display.  The coordinates of the
+//! line are assumed to be within the extents of the display.
+//!
+//! \return None.
+//
+//*****************************************************************************
+static void Crystalfontz128x128_LineDrawV(void *pvDisplayData, int16_t lX, int16_t lY1,
+                                   int16_t lY2, uint16_t ulValue)
+{
     Crystalfontz128x128_SetDrawFrame(lX, lY1, lX, lY2);
+
+    //
+    // Write the pixel value.
+    //
+    int16_t i;
     HAL_LCD_writeCommand(CM_RAMWR);
-    for(i = lY1; i <= lY2; i++) {
-        HAL_LCD_writeData(ulValue >> 8); HAL_LCD_writeData(ulValue);
+    for (i = lY1; i <= lY2; i++)
+    {
+        HAL_LCD_writeData(ulValue>>8);
+        HAL_LCD_writeData(ulValue);
     }
 }
 
-void Crystalfontz128x128_RectFill(void *pvDisplayData, const Graphics_Rectangle *psRect, uint16_t ulValue)
+
+//*****************************************************************************
+//
+//! Fills a rectangle.
+//!
+//! \param pvDisplayData is a pointer to the driver-specific data for this
+//! display driver.
+//! \param pRect is a pointer to the structure describing the rectangle.
+//! \param ulValue is the color of the rectangle.
+//!
+//! This function fills a rectangle on the display.  The coordinates of the
+//! rectangle are assumed to be within the extents of the display, and the
+//! rectangle specification is fully inclusive (in other words, both sXMin and
+//! sXMax are drawn, along with sYMin and sYMax).
+//!
+//! \return None.
+//
+//*****************************************************************************
+static void Crystalfontz128x128_RectFill(void *pvDisplayData, const Graphics_Rectangle *pRect,
+                                  uint16_t ulValue)
 {
-    int32_t i, numPixels;
-    Crystalfontz128x128_SetDrawFrame(psRect->xMin, psRect->yMin, psRect->xMax, psRect->yMax);
+    int16_t x0 = pRect->sXMin;
+    int16_t x1 = pRect->sXMax;
+    int16_t y0 = pRect->sYMin;
+    int16_t y1 = pRect->sYMax;
+
+    Crystalfontz128x128_SetDrawFrame(x0, y0, x1, y1);
+
+    //
+    // Write the pixel value.
+    //
+    int16_t i;
+    int16_t pixels = (x1 - x0 + 1) * (y1 - y0 + 1);
     HAL_LCD_writeCommand(CM_RAMWR);
-    
-    numPixels = (int32_t)(psRect->xMax - psRect->xMin + 1) * (int32_t)(psRect->yMax - psRect->yMin + 1);
-    
-    // Assert control lines once outside the loop
-    P3OUT |= BIT1;  // LCD_DC = 1 (Data Mode)
-    P3OUT &= ~BIT4; // LCD_CS = 0 (Display Selected)
-
-    for(i = 0; i < numPixels; i++) {
-        while ((UCB0IFG & UCTXIFG) == 0);
-        UCB0TXBUF = (uint8_t)(ulValue >> 8); // High Byte
-        
-        while ((UCB0IFG & UCTXIFG) == 0);
-        UCB0TXBUF = (uint8_t)(ulValue);      // Low Byte
+    for (i = 0; i <= pixels; i++)
+    {
+        HAL_LCD_writeData(ulValue>>8);
+        HAL_LCD_writeData(ulValue);
     }
-    
-    while ((UCB0STATW & UCBUSY) != 0); 
-    P3OUT |= BIT4;  // LCD_CS = 1
 }
 
-
-uint32_t Crystalfontz128x128_ColorTranslate(void *pvDisplayData, uint32_t ulValue)
+//*****************************************************************************
+//
+//! Translates a 24-bit RGB color to a display driver-specific color.
+//!
+//! \param pvDisplayData is a pointer to the driver-specific data for this
+//! display driver.
+//! \param ulValue is the 24-bit RGB color.  The least-significant byte is the
+//! blue channel, the next byte is the green channel, and the third byte is the
+//! red channel.
+//!
+//! This function translates a 24-bit RGB color into a value that can be
+//! written into the display's frame buffer in order to reproduce that color,
+//! or the closest possible approximation of that color.
+//!
+//! \return Returns the display-driver specific color.
+//
+//*****************************************************************************
+static uint32_t Crystalfontz128x128_ColorTranslate(void *pvDisplayData,
+                                    uint32_t ulValue)
 {
-    return(((ulValue & 0x00F80000) >> 8) | ((ulValue & 0x0000FC00) >> 5) | ((ulValue & 0x000000F8) >> 3));
+    //
+    // Translate from a 24-bit RGB color to a 5-6-5 RGB color.
+    //
+    return(((((ulValue) & 0x00f80000) >> 8) |
+            (((ulValue) & 0x0000fc00) >> 5) |
+            (((ulValue) & 0x000000f8) >> 3)));
 }
 
-void Crystalfontz128x128_Flush(void *pvDisplayData) {}
 
-void Crystalfontz128x128_ClearDisplay(void *pvDisplayData, uint16_t ulValue)
+//*****************************************************************************
+//
+//! Flushes any cached drawing operations.
+//!
+//! \param pvDisplayData is a pointer to the driver-specific data for this
+//! display driver.
+//!
+//! This functions flushes any cached drawing operations to the display.  This
+//! is useful when a local frame buffer is used for drawing operations, and the
+//! flush would copy the local frame buffer to the display.  For the SSD2119
+//! driver, the flush is a no operation.
+//!
+//! \return None.
+//
+//*****************************************************************************
+static void
+Crystalfontz128x128_Flush(void *pvDisplayData)
 {
-    Graphics_Rectangle rect = {0, 0, 127, 127};
-    Crystalfontz128x128_RectFill(pvDisplayData, &rect, ulValue);
+    //
+    // There is nothing to be done.
+    //
 }
+
+
+//*****************************************************************************
+//
+//! Send command to clear screen.
+//!
+//! \param pvDisplayData is a pointer to the driver-specific data for this
+//! display driver.
+//!
+//! This function does a clear screen and the Display Buffer contents
+//! are initialized to the current background color.
+//!
+//! \return None.
+//
+//*****************************************************************************
+static void
+Crystalfontz128x128_ClearScreen (void *pvDisplayData, uint16_t ulValue)
+{
+    Graphics_Rectangle rect = { 0, 0, LCD_VERTICAL_MAX-1, LCD_VERTICAL_MAX-1};
+    Crystalfontz128x128_RectFill(&pvDisplayData, &rect, ulValue);
+}
+
+
+//*****************************************************************************
+//
+//! The display structure that describes the driver for the Kitronix
+//! K350QVG-V1-F TFT panel with an SSD2119 controller.
+//
+//*****************************************************************************
+const Graphics_Display g_sCrystalfontz128x128 =
+{
+    sizeof(tDisplay),
+    0,
+    LCD_VERTICAL_MAX,
+    LCD_HORIZONTAL_MAX,
+    Crystalfontz128x128_PixelDraw,
+    Crystalfontz128x128_PixelDrawMultiple,
+    Crystalfontz128x128_LineDrawH,
+    Crystalfontz128x128_LineDrawV,
+    Crystalfontz128x128_RectFill,
+    Crystalfontz128x128_ColorTranslate,
+    Crystalfontz128x128_Flush,
+    Crystalfontz128x128_ClearScreen
+
+};
+
+
+
+
+
+
+/* --COPYRIGHT--,BSD
+ * Copyright (c) 2015, Texas Instruments Incorporated
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * *  Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * *  Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * *  Neither the name of Texas Instruments Incorporated nor the names of
+ *    its contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * --/COPYRIGHT--*/
